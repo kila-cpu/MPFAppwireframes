@@ -27,9 +27,11 @@ Quick Access, and the bottom Home / Profile bar.
 Raising and handing out work. **Assigning a job needs only the job details and
 the person** — everything else belongs to the fitter.
 
-- **New job sheet** is a short form: machine, equipment type, workshop or site
-  (+ site contact), job type, fault, then **Assign to**. Machine and fault are
-  required; the fitter can be left blank and handed out later.
+- **New job sheet** is a short form: machine (typed in, with an optional fleet
+  no.), equipment type, workshop or site (+ site contact), job type, fault, then
+  **Assign to**. Machine and fault are required; the fitter can be left blank and
+  handed out later. A machine that is not in the catalogue still displays
+  correctly everywhere — the icon comes from the equipment type.
 - **Scope switcher** on the list — My sheets / Unassigned / Everyone — with
   **Assign** / **Reassign** on any open sheet, and a banner for anything sitting
   unclaimed.

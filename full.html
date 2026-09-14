@@ -1257,6 +1257,12 @@
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
+  /* Machines are typed in free-hand on the new-sheet form, so they may not be in
+     the catalogue. Display falls back to whatever was entered. */
+  function mach(j){
+    var m=machOf(j.fleet);
+    return [j.machName||m[0], j.fleet||m[1], j.machIcon||m[2]];
+  }
   function machOf(fleet){
     for(var i=0;i<MACHINES.length;i++) if(MACHINES[i][1]===fleet) return MACHINES[i];
     return ["","","⚙️"];
@@ -1715,7 +1721,7 @@
   }
 
   function sheetLabel(j){
-    return "#"+j.no+" — "+machOf(j.fleet)[0].split(" ").slice(0,2).join(" ")+
+    return "#"+j.no+" — "+mach(j)[0].split(" ").slice(0,2).join(" ")+
            " — "+String(j.type).toLowerCase();
   }
   function isoDate(j){
@@ -1826,13 +1832,15 @@
      everything below is read-only here.
      ============================================================ */
   var EQUIP=["Excavator","Dumper","Telehandler","Roller","Compressor","Boom lift","Generator"];
+  var EQICON={Excavator:"🚜",Dumper:"🚧",Telehandler:"🏗",Roller:"⚙️",
+              Compressor:"⚙️","Boom lift":"🏗",Generator:"⚙️"};
   var JTYPES=["Service","Repair","12 week inspection & tyres"];
   var STEPNAMES=["Start","Details","Work","Parts","End"];
 
   function norm(j){
     if(j._n) return j;
     j._n=true;
-    var mc=machOf(j.fleet);
+    var mc=mach(j);
     j.equip=j.equip||""; j.model=j.model||mc[0];
     j.contact=j.contact||"";
     j.jtype=j.jtype||(JTYPES.indexOf(j.type)>=0?j.type
@@ -1853,7 +1861,7 @@
   }
   function renderOverview(){
     var j=norm(job(S.cur)); if(!j) return;
-    var mc=machOf(j.fleet), b=bucket(j);
+    var mc=mach(j), b=bucket(j);
     var lab=b==="done"?"Complete":b==="active"?"In progress":"Draft";
     $("ovTitle").textContent="#"+j.no;
     $("ovSub").textContent=mc[0];
@@ -1930,13 +1938,12 @@
   /* ---------- raise a sheet: details, then who does it ---------- */
   var D=null;
   function newSheet(){
-    D={no:"JC-"+S.seq,fleet:"",equip:"",loc:"Workshop",site:"MPF workshop",contact:"",
+    D={no:"JC-"+S.seq,mach:"",fleet:"",equip:"",loc:"Workshop",site:"MPF workshop",contact:"",
        jtype:"Service",fault:"",fitter:""};
     $("njNo").textContent="#"+D.no;
     show("newjob"); renderNew();
   }
   function renderNew(){
-    var mc=D.fleet?machOf(D.fleet):null;
     function opts(arr,v){return arr.map(function(o){
       return '<option'+(v===o?" selected":"")+'>'+esc(o)+'</option>';}).join("");}
     var f=D.fitter?FITTERS.filter(function(x){return x.n===D.fitter;})[0]:null;
@@ -1948,9 +1955,11 @@
 
       '<div class="fsec"><b>Job details</b><i></i></div>'+
       '<div class="wf" id="nwMach"><label>Machine <span class="req">*</span></label>'+
-        '<button class="picker" id="njMach"><span class="pt">'+
-        (mc?'<b>'+esc(mc[0])+'</b><span>'+esc(mc[1])+'</span>':'<b class="ph">Select a machine…</b>')+
-        '</span><span class="chev">'+ic("CHEV")+'</span></button></div>'+
+        '<input type="text" id="njMach" value="'+esc(D.mach)+'" '+
+        'placeholder="e.g. CAT 320 Tracked Excavator" autocomplete="off"></div>'+
+      '<div class="wf"><label>Fleet no. / serial</label>'+
+        '<input type="text" id="njFleet" value="'+esc(D.fleet)+'" '+
+        'placeholder="e.g. SVPH1140" autocomplete="off"></div>'+
       '<div class="wf"><label>Equipment type</label><select id="njEquip">'+
         '<option value="">Select equipment type…</option>'+opts(EQUIP,D.equip)+'</select></div>'+
       '<div class="wf"><label>Where is the work</label><div class="toggle" id="njLoc">'+
@@ -1980,11 +1989,9 @@
         '</span><span class="chev">'+ic("CHEV")+'</span></button>'+
         '<div class="hint">You can leave this blank and hand it out later.</div></div>';
 
-    $("njMach").addEventListener("click",function(){
-      pickOpen({title:"Select a machine",ph:"Search machines or fleet numbers…",
-        rows:MACHINES.map(function(m){return {v:m[1],b:m[0],s:m[1],mono:true,icon:m[2],on:D.fleet===m[1]};}),
-        pick:function(v){ D.fleet=v; renderNew(); }});
-    });
+    $("njMach").addEventListener("input",function(){
+      D.mach=this.value; $("nwMach").classList.remove("bad"); });
+    $("njFleet").addEventListener("input",function(){ D.fleet=this.value; });
     $("njFit").addEventListener("click",function(){
       pickOpen({title:"Assign this job sheet",ph:"Search employees…",
         rows:FITTERS.map(function(x){
@@ -2016,7 +2023,7 @@
   }
   $("njSave").addEventListener("click",function(){
     var ok=true;
-    if(!D.fleet){ bad("nwMach"); ok=false; }
+    if(!D.mach.trim()){ bad("nwMach"); ok=false; }
     if(D.loc==="Onsite"&&!D.site){ bad("nwSite"); ok=false; }
     if(!D.fault.trim()){ bad("nwFault"); ok=false; }
     if(!ok){ toast("Fill in the highlighted fields","⚠️"); return; }
@@ -2026,7 +2033,8 @@
       fault:D.fault.trim(),adminNote:"",fitter:D.fitter,
       status:D.fitter?"assigned":"unassigned",sessions:[],work:"",meter:"",parts:[],
       link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null,
-      _n:true,equip:D.equip,model:machOf(D.fleet)[0],contact:D.contact,jtype:D.jtype,
+      machName:D.mach.trim(),machIcon:EQICON[D.equip]||"⚙️",
+      _n:true,equip:D.equip,model:D.mach.trim(),contact:D.contact,jtype:D.jtype,
       checks:{},performed:"",wstep:1};
     S.jobs.unshift(j); S.seq++;
     S.fresh=j.no; S.scope=D.fitter?"all":"unassigned"; S.filter="all";
@@ -2084,7 +2092,7 @@
     linkTo=j.sentTo||OFFICE[0].n;
     linkRef="";
     $("lsTitle").innerHTML="Job sheet sign-off<em>"+esc(j.no)+" &middot; "+
-      esc(machOf(j.fleet)[0])+"</em>";
+      esc(mach(j)[0])+"</em>";
     renderLink(j);
     sheetOpen($("linkSheet"));
   }
@@ -2114,7 +2122,7 @@
       '<div class="h-sec" style="margin:20px 2px 10px">What they will see</div>'+
       '<dl class="drows" style="background:var(--panel-bg);border:1px solid var(--line-2);border-radius:14px;padding:14px">'+
         '<div class="drow"><dt>Job card</dt><dd>'+esc(j.no)+' &middot; '+esc(j.type)+'</dd></div>'+
-        '<div class="drow"><dt>Machine</dt><dd>'+esc(machOf(j.fleet)[0])+
+        '<div class="drow"><dt>Machine</dt><dd>'+esc(mach(j)[0])+
           '<br><span class="mono muted">'+esc(j.fleet)+'</span></dd></div>'+
         '<div class="drow"><dt>Location</dt><dd>'+
           esc(j.loc==="Workshop"?"MPF workshop":j.site)+'</dd></div>'+
@@ -2179,8 +2187,8 @@
     $("tsList").innerHTML=todayRows.length?todayRows.map(function(r){
       var j=r[0],live=S.active&&S.active.no===j.no;
       return '<div class="tlrow"><span class="tick'+(live?" live":"")+'">'+
-        (live?ic("PLAY"):machOf(j.fleet)[2])+'</span>'+
-        '<div class="tt"><b>'+esc(j.no)+'</b><span>'+esc(machOf(j.fleet)[0])+' &middot; '+
+        (live?ic("PLAY"):mach(j)[2])+'</span>'+
+        '<div class="tt"><b>'+esc(j.no)+'</b><span>'+esc(mach(j)[0])+' &middot; '+
         esc(j.type)+'</span></div>'+
         '<span class="tv'+(live?" live":"")+'">'+hrs(r[1])+' h</span></div>';
     }).join(""):'<div class="emptybox" style="padding:22px 14px"><div class="ei">'+ic("CLOCK")+
@@ -2230,8 +2238,8 @@
   function sheetSummary(j){
     return '<div class="osumm"><div class="oh"><b>Machine job sheet</b>'+
       '<span class="jn">'+esc(j.no)+'</span></div><div class="cbody">'+
-      '<div class="jr2" style="margin-bottom:14px"><span class="mico">'+machOf(j.fleet)[2]+
-      '</span><div class="jbody"><b class="mn">'+esc(machOf(j.fleet)[0])+'</b>'+
+      '<div class="jr2" style="margin-bottom:14px"><span class="mico">'+mach(j)[2]+
+      '</span><div class="jbody"><b class="mn">'+esc(mach(j)[0])+'</b>'+
       '<span class="fl">'+esc(j.fleet)+'</span></div></div>'+
       '<dl class="drows">'+
       [["Job type",esc(j.type)+(j.pri==="High"?' <span class="pill hi">High</span>':"")],
