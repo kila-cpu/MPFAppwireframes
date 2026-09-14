@@ -146,6 +146,7 @@
   .pill.active{background:var(--amber-soft);color:var(--amber-text)}
   .pill.po{background:var(--violet-soft);color:var(--violet-text)}
   .pill.unassigned{background:var(--red);color:#fff}
+  .pill.full{background:var(--red-soft);color:var(--red-text)}
   .pill.on{background:var(--green-soft);color:var(--green-text)}
   .pill.off{background:var(--field);color:var(--sub-2)}
   .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}
@@ -157,6 +158,10 @@
     display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;flex:none}
   .who2 .av.on{background:var(--green-soft);color:var(--green-text)}
   .who2 b{font-weight:700;font-size:14px}
+  .lvl{background:0;border:0;padding:0;cursor:pointer;font-family:inherit}
+  .lvl:hover .pill{box-shadow:0 0 0 2px var(--line-2)}
+  .yes{display:inline-flex;align-items:center;gap:7px;font-weight:750;color:var(--green-text)}
+  .yes svg{width:15px;height:15px}
 
   .bar{height:8px;border-radius:4px;background:var(--field);overflow:hidden;min-width:90px}
   .bar i{display:block;height:100%;background:var(--red);border-radius:4px}
@@ -341,11 +346,12 @@
      Demo data — mirrors the fitter app
      ============================================================ */
   var FITTERS=[
-    {n:"Stuart",         r:"Workshop · plant", on:true,  wk:[8.25,8.75,7.5,8,6.25,0,0]},
-    {n:"Csaba Varga",    r:"Workshop · plant", on:true,  wk:[8,8,8.5,7.75,8,0,0]},
-    {n:"Declan Byrne",   r:"Mobile fitter",    on:true,  wk:[9,8.5,9.25,8,7.5,4,0]},
-    {n:"Martin Kelly",   r:"Mobile fitter",    on:false, wk:[7.5,8,8,8,8,0,0]},
-    {n:"Istvan Horvath", r:"Workshop · plant", on:false, wk:[8,7.75,8,0,0,0,0]}
+    /* access: "full" can assign job cards to other users; "general" cannot */
+    {n:"Stuart",         access:"full",    on:true,  wk:[8.25,8.75,7.5,8,6.25,0,0]},
+    {n:"Csaba Varga",    access:"general", on:true,  wk:[8,8,8.5,7.75,8,0,0]},
+    {n:"Declan Byrne",   access:"general", on:true,  wk:[9,8.5,9.25,8,7.5,4,0]},
+    {n:"Martin Kelly",   access:"general", on:false, wk:[7.5,8,8,8,8,0,0]},
+    {n:"Istvan Horvath", access:"general", on:false, wk:[8,7.75,8,0,0,0,0]}
   ];
   var MACHINES=[
     ["Sunward SWE25UF Mini Excavator","SVPH2871","Excavator","4182",  "12 Jun 2026","Due"],
@@ -457,14 +463,14 @@
   var NAV=[
     ["dash","GRID","Dashboard"],
     ["sheets","DOC","Job sheets"],
-    ["fitters","USERS","Fitters"],
+    ["fitters","USERS","Employees"],
     ["time","CLOCK","Timesheets"],
     ["plant","PLANT","Plant register"],
     ["parts","PART","Parts"],
     ["sites","BUILD","Customers & sites"],
     ["settings","COG","Settings"]
   ];
-  var TITLES={dash:"Dashboard",sheets:"Job sheets",fitters:"Fitters",time:"Timesheets",
+  var TITLES={dash:"Dashboard",sheets:"Job sheets",fitters:"Employees",time:"Timesheets",
     plant:"Plant register",parts:"Parts",sites:"Customers & sites",settings:"Settings",
     sheet:"Job sheet"};
 
@@ -696,20 +702,35 @@
   function pillSp(s){return '<span class="sp">'+pill(s.status)+'</span>';}
   function drow(k,v){return '<div class="drow"><dt>'+k+'</dt><dd>'+v+'</dd></div>';}
 
-  /* ---------- 3 · Fitters ---------- */
+  /* ---------- 3 · Employees ---------- */
+  function accessPill(a){
+    return a==="full"
+      ? '<span class="pill full">Full Access</span>'
+      : '<span class="pill draft">General Access</span>';
+  }
   function vFitters(){
-    return head("Fitters","Who is on the clock, what they are working on, and how loaded they are",
-      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>')+
-      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Fitter</th><th>Role</th>'+
-      '<th>Clock</th><th>Open sheets</th><th>Working on</th><th>Hours this week</th></tr></thead><tbody>'+
-      FITTERS.map(function(f){
+    var full=FITTERS.filter(function(f){return f.access==="full";});
+    return head("Employees",
+      "Who is on the clock, what they are working on, and what they are allowed to do",
+      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>'+
+      '<button class="btn primary" id="addUser">'+ic("PLUS")+' Add employee</button>')+
+      '<div class="note" style="margin-bottom:20px"><b>Full Access</b> can assign job cards to '+
+      'other users; <b>General Access</b> can only work the job cards assigned to them. '+
+      full.length+' of '+FITTERS.length+' employees currently have full access.</div>'+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Access</th>'+
+      '<th>Can assign job cards</th><th>Clock</th><th>Open sheets</th><th>Working on</th>'+
+      '<th>Hours this week</th></tr></thead><tbody>'+
+      FITTERS.map(function(f,i){
         var open=SHEETS.filter(function(s){return s.fitter===f.n&&
           (s.status==="draft"||s.status==="active");});
         var run=SHEETS.filter(function(s){return s.fitter===f.n&&s.status==="active";})[0];
         var h=f.wk.reduce(function(a,b){return a+b;},0);
         return '<tr><td><div class="who2"><span class="av'+(f.on?" on":"")+'">'+ini(f.n)+
             '</span><b>'+esc(f.n)+'</b></div></td>'+
-          '<td>'+esc(f.r)+'</td>'+
+          '<td><button class="lvl" data-lvl="'+i+'">'+accessPill(f.access)+'</button></td>'+
+          '<td>'+(f.access==="full"
+            ? '<span class="yes">'+ic("CHECK")+' Yes</span>'
+            : '<span class="cell-sub" style="margin:0">No</span>')+'</td>'+
           '<td><span class="pill '+(f.on?"on":"off")+'"><span class="dot '+(f.on?"g":"n")+
             '"></span>'+(f.on?"On the clock":"Off")+'</span></td>'+
           '<td class="num">'+open.length+'</td>'+
@@ -831,6 +852,18 @@
           '<span>Email the office again if no PO comes back within 48 hours.</span></div>'+
           '<button class="sw'+(S.reminders?" on":"")+'" data-sw="reminders"></button></div>'+
       '</div></div>'+
+      '<div class="card"><h2>Access levels</h2><div class="cbody">'+
+        '<div class="setrow"><div class="st"><b>Full Access</b>'+
+          '<span>Can assign job cards to other users, on top of working their own.</span></div>'+
+          '<span class="pill full">'+FITTERS.filter(function(f){return f.access==="full";}).length+
+          ' user</span></div>'+
+        '<div class="setrow"><div class="st"><b>General Access</b>'+
+          '<span>Can only open and work the job cards assigned to them.</span></div>'+
+          '<span class="pill draft">'+FITTERS.filter(function(f){return f.access!=="full";}).length+
+          ' users</span></div>'+
+        '<div class="note" style="margin-top:14px">Set an employee&rsquo;s level on the '+
+        '<b>Employees</b> page.</div>'+
+      '</div></div>'+
       '<div class="card"><h2>Office contacts</h2><div class="cbody"><dl class="drows">'+
         drow("Accounts","Sinéad Brennan<br><span class=\"muted\">sinead.brennan@mpfitters.ie</span>")+
         drow("Contracts","Gerry Hanley<br><span class=\"muted\">g.hanley@mpfitters.ie</span>")+
@@ -896,13 +929,23 @@
         toast('<b>'+esc(c.n)+'</b> '+(c.on?"added to":"removed from")+" the checklist template");
       });
     });
+    [].forEach.call(document.querySelectorAll("#page [data-lvl]"),function(b){
+      b.addEventListener("click",function(){
+        var f=FITTERS[+b.dataset.lvl];
+        f.access=f.access==="full"?"general":"full";
+        render();
+        toast("<b>"+esc(f.n)+"</b> set to <b>"+
+          (f.access==="full"?"Full Access":"General Access")+"</b>"+
+          (f.access==="full"?" — can now assign job cards to others":""));
+      });
+    });
     [].forEach.call(document.querySelectorAll("#page [data-sw]"),function(b){
       b.addEventListener("click",function(){
         S[b.dataset.sw]=!S[b.dataset.sw]; render();
         toast("Setting updated");
       });
     });
-    ["expCsv","expPdf","newSheet","addMach","addPart","addSite"].forEach(function(id){
+    ["expCsv","expPdf","newSheet","addMach","addPart","addSite","addUser"].forEach(function(id){
       var n=$(id);
       if(n) n.addEventListener("click",function(){
         toast("<b>"+n.textContent.trim()+"</b> — not wired up in this wireframe");

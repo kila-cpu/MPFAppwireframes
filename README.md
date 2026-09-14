@@ -121,15 +121,19 @@ and tables. Eight sections:
 3. **Job sheet detail** — read-only copy of what the fitter filled in: machine,
    fault, work carried out, labour, the marked checklist rows (checked in green,
    failed in red), parts, photos, and the sign-off panel with the PO number.
-4. **Fitters** — who is on the clock, open sheets each, what they are on now, and
-   hours this week.
+4. **Employees** — who is on the clock, open sheets each, what they are on now,
+   hours this week, and each person's **access level**. *Full Access* can assign
+   job cards to other users; *General Access* can only work the cards assigned to
+   them. Stuart is the only full-access user. Tapping the access pill switches a
+   person's level.
 5. **Timesheets** — week grid of hours per fitter per day from the clock, with
    booked vs unbooked totals and per-fitter approval.
 6. **Plant register** — every machine with fleet no, hour meter, last service and
    whether a service is due or overdue.
 7. **Customers & sites** — sites, who signs off, sheets raised and POs received.
 8. **Settings** — the service checklist template (toggle rows on and off), job
-   types, the PO-required rule and chase reminders, and office contacts.
+   types, the PO-required rule and chase reminders, the two access levels, and
+   office contacts.
 
 Interactive throughout: navigation, search, filters, assigning an unassigned
 sheet, chasing a PO, approving a timesheet week, and toggling checklist rows all
