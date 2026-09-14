@@ -26,7 +26,7 @@
     width:760px;height:620px;pointer-events:none;
     background:radial-gradient(closest-side,rgba(211,48,42,.20),transparent 72%);
   }
-  .wrap{position:relative;width:100%;max-width:880px;display:flex;flex-direction:column;align-items:center}
+  .wrap{position:relative;width:100%;max-width:1040px;display:flex;flex-direction:column;align-items:center}
 
   .mark{width:220px;margin-bottom:22px}
   .mark svg{width:100%;height:auto;display:block;
@@ -36,7 +36,7 @@
   .kicker{font-size:12.5px;letter-spacing:.19em;text-transform:uppercase;color:var(--sub-2);
     font-weight:600;margin:0 0 26px}
 
-  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(266px,1fr));gap:22px;width:100%}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:20px;width:100%}
   .portal{position:relative;display:flex;flex-direction:column;text-align:left;
     background:var(--card);border:1px solid var(--line);border-radius:16px;padding:26px 24px 24px;
     color:inherit;text-decoration:none;cursor:pointer;font-family:inherit;
@@ -76,24 +76,34 @@
   <p class="kicker">Select a portal to preview</p>
 
   <div class="grid">
-    <a class="portal" href="mobile.html">
+    <a class="portal" href="full.html">
       <span class="ico" id="i1"></span>
       <span class="arw" id="a1"></span>
-      <h2>Fitter mobile app</h2>
-      <p>Full click-through wireframe of the fitter&rsquo;s phone app. Clock in &rarr; open a job
-      sheet &rarr; work it through five steps (start, details, work, parts, end) &rarr; sign it off
-      &rarr; send to the office for a PO number.</p>
-      <span class="badge"><span class="bi" id="b1"></span> Mobile wireframes &middot; 5 steps</span>
+      <h2>Full access user</h2>
+      <p>What a supervisor sees. Raise a job sheet &mdash; machine, site, job type, fault &mdash;
+      and hand it to a fitter. Track every sheet as it comes back, and reassign anything sitting
+      unclaimed. The work itself is filled in by whoever it is assigned to.</p>
+      <span class="badge"><span class="bi" id="b1"></span> Mobile &middot; assign &amp; track</span>
+    </a>
+
+    <a class="portal" href="fitter.html">
+      <span class="ico" id="i2"></span>
+      <span class="arw" id="a2"></span>
+      <h2>Fitter (general access)</h2>
+      <p>What the assigned fitter sees. Clock in, open a job sheet handed to them, and work it
+      through five steps &mdash; start, details, work, parts, end &mdash; filling in the work done,
+      parts used and the signature before it goes to the office.</p>
+      <span class="badge"><span class="bi" id="b2"></span> Mobile &middot; 5 steps</span>
     </a>
 
     <a class="portal" href="admin.html">
-      <span class="ico" id="i2"></span>
-      <span class="arw" id="a2"></span>
+      <span class="ico" id="i3"></span>
+      <span class="arw" id="a3"></span>
       <h2>MPF admin backend</h2>
       <p>The workshop&rsquo;s management dashboard. Review job sheets as fitters complete them,
-      assign work, approve timesheets, chase PO numbers from the office, and keep the plant, parts
-      and checklist templates up to date.</p>
-      <span class="badge"><span class="bi" id="b2"></span> Admin portal &middot; 8 sections</span>
+      approve timesheets, chase PO numbers from the office, set who has full access, and keep the
+      plant, parts and checklist templates up to date.</p>
+      <span class="badge"><span class="bi" id="b3"></span> Admin portal &middot; 8 sections</span>
     </a>
   </div>
 
@@ -128,13 +138,15 @@
   }
 
   document.getElementById("mark").innerHTML=MPF();
-  document.getElementById("i1").innerHTML=sv('<rect x="6" y="2.5" width="12" height="19" rx="2.6"/><path d="M10.5 5.6h3"/><path d="M11 18.6h2"/>');
-  document.getElementById("i2").innerHTML=sv('<circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/>');
+  var PHONE='<rect x="6" y="2.5" width="12" height="19" rx="2.6"/><path d="M10.5 5.6h3"/><path d="M11 18.6h2"/>';
+  document.getElementById("i1").innerHTML=sv('<path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 20v-1.4a4 4 0 0 0-3-3.86"/><path d="M16.4 4.2a3.5 3.5 0 0 1 0 6.6"/>');
+  document.getElementById("i3").innerHTML=sv('<circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/>');
+  document.getElementById("i2").innerHTML=sv(PHONE);
   var arw=sv('<path d="M7 17 17 7"/><path d="M8.5 7H17v8.5"/>',2);
-  document.getElementById("a1").innerHTML=arw;
-  document.getElementById("a2").innerHTML=arw;
-  document.getElementById("b1").innerHTML=sv('<rect x="6" y="2.5" width="12" height="19" rx="2.6"/><path d="M11 18.6h2"/>');
-  document.getElementById("b2").innerHTML=sv('<rect x="2.5" y="4.5" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 17v3.5"/>');
+  ["a1","a2","a3"].forEach(function(k){document.getElementById(k).innerHTML=arw;});
+  document.getElementById("b1").innerHTML=sv(PHONE);
+  document.getElementById("b2").innerHTML=sv(PHONE);
+  document.getElementById("b3").innerHTML=sv('<rect x="2.5" y="4.5" width="19" height="12.5" rx="2"/><path d="M8 20.5h8M12 17v3.5"/>');
 })();
 </script>
 </body>

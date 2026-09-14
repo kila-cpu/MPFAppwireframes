@@ -7,7 +7,8 @@ self-contained HTML file.
 | File | What it is |
 | --- | --- |
 | `index.html` | Portal landing page — pick a wireframe |
-| `mobile.html` | Fitter mobile app (5 step job sheet + clock in/out) |
+| `full.html` | Full access user — raise a sheet and assign it |
+| `fitter.html` | Fitter (general access) — do the work, 5 steps |
 | `admin.html` | MPF admin backend (8 sections) |
 | `server.js` | Zero-dependency static server for Railway |
 
@@ -15,112 +16,40 @@ Every page links back to the portal, so the whole set click-throughs as one.
 
 ---
 
-## 1 · Fitter mobile app — `mobile.html`
+## 1 · The two frontends
 
-Built to the **Plant job sheet** wireframes: a five step job sheet
-(Start → Details → Work → Parts → End) reached from a job sheets list, plus the
-clock in / clock out on the app's home screen. Machines only — every sheet is
-against a machine, never a registration.
+Two separate wireframes, switchable from the pill under the phone or from the
+portal. Both share the MPF shell: home with clock in/out, a **Job Card** tile in
+Quick Access, and the bottom Home / Profile bar.
 
-Branded for **Machine Plant Fitters Ltd.** — the MPF red (`--red: #D3302A`), black
-(`--mpf-black: #1C1C1C`) and white, with the logo redrawn as inline SVG (the
-`MPF()` helper) so it stays sharp at any size. It appears on the masthead, in the
-job sheets header, and as the letterhead on the office sign-off page.
+### `full.html` — full access (Stuart)
 
-Otherwise styled to match the live driver app (red header and cards, emoji tiles,
-bottom tab bar) and presented in the same shell as the other mobile demos: studio
-backdrop, phone frame, and a **Restart demo** pill under the phone.
+Raising and handing out work. **Assigning a job needs only the job details and
+the person** — everything else belongs to the fitter.
 
-The fitter is **Stuart**.
+- **New job sheet** is a short form: machine, equipment type, workshop or site
+  (+ site contact), job type, fault, then **Assign to**. Machine and fault are
+  required; the fitter can be left blank and handed out later.
+- **Scope switcher** on the list — My sheets / Unassigned / Everyone — with
+  **Assign** / **Reassign** on any open sheet, and a banner for anything sitting
+  unclaimed.
+- Opening a sheet gives a **read-only overview**: job details, who has it, and
+  the fitter's progress (step ribbon, work done, parts, checklist, signature, PO).
+  Nothing on it can be edited from a full access account.
 
-## The screens
+### `fitter.html` — general access (Declan Byrne)
 
-**Home** — the app's dashboard. Clock In / Clock Out beside Switch in the red
-hero, and a single **Job Card** tile in Quick Access.
+Doing the work. The five step job sheet — **Start, Details, Work, Parts, End** —
+with the service checklist, parts modal, photos, signature and completion, then
+the office sign-off link that requires a PO number.
 
-**Plant job sheets** — white header with the back button, title and
-"Job cards & service records". Filter chips **All / Active / Draft / Done** with
-counts. Each sheet shows `#JC-1148 — Sunward SWE25UF — repair`, a status pill,
-`2026-09-07 · Stuart`, `Step n of 5` and a **View PDF** button, with a coloured
-left edge (green complete, red active). A floating **+ New Job Sheet** button
-starts a fresh one.
+A general access user can still **create their own job sheet** and work it; they
+simply cannot hand sheets to anybody else, so they get no scope switcher, no
+assign buttons and no unassigned banner.
 
-**Job sheet** — red header with the job number, a `NEW` / `OPEN` / `DONE` tag,
-and the five step tabs. Tabs are tappable directly, or use Next / back.
-
-1. **Start** — fitter's name, date, start and end time. Total hours is derived
-   from the two times and is read-only.
-2. **Details** — equipment type, make & model, serial no., machine hours, then
-   site and contact number, then the job type as radio cards
-   (Service / Repair / 12 week inspection & tyres).
-3. **Work** — the service checklist as a table with **Checked** and **Failed**
-   columns (16 rows), then work performed, job photos, comments and additional
-   notes.
-4. **Parts** — "No parts added yet." until you use **+ Add part**, which opens
-   the Add Part modal (part name, part number, quantity). Picking a catalogue
-   part fills the part number in; it stays editable.
-5. **End** — a read-back of equipment, site, job type, date, times and total
-   hours, then the signature row and **Complete job sheet**.
-
-**Office sign-off link** — a completed sheet can be sent to the office, who open
-a read-only copy and must enter a **PO number** before they can sign. Their
-signature and PO come back onto the sheet. **View PDF** on any row opens the same
-read-only view.
-
-## Access levels
-
-The app signs you in as one person — there is no role switcher. **Stuart** is
-signed in, and he holds **Full Access**.
-
-Both levels can do the everyday work: create a job sheet with **+ New Job Sheet**,
-open the sheets assigned to them, and work them through all five steps.
-
-**Full Access adds one thing: assigning job sheets to other people.**
-
-- A scope switcher above the filters — **My sheets / Unassigned / Everyone**
-- An **Assign** / **Reassign** button on any open sheet card
-- A banner when sheets are sitting unassigned, linking straight to them
-- The Start step's fitter field becomes an **Assigned to** picker, listing each
-  employee with their access level, open sheet count and whether they are on the
-  clock
-
-A **General Access** user sees none of that: no scope switcher, no assign
-buttons, no unassigned banner — just their own sheets, which they can still
-create and work in full. Flip `access` in the `FITTERS` list at the top of the
-script to see it.
-
-## Rules built in
-
-- You must be clocked in before starting a job sheet; the list says so and the
-  new-sheet button sends you back to Home.
-- The checklist treats **Checked** and **Failed** as mutually exclusive, and
-  tapping the same box again clears it.
-- A sheet cannot be completed without a signature.
-- Marking any checklist row moves a sheet from Draft to Active.
-- The three chips map onto the underlying statuses: Draft = not started,
-  Active = in progress / awaiting PO, Done = signed.
-
-## Notes for the backend
-
-- Equipment types, models, sites, the service checklist and the parts catalogue
-  are hard-coded lists at the top of the `<script>`.
-- Job numbers increment from `S.seq` in the browser only — real numbering should
-  be server-assigned.
-- Sheets seeded before the wizard existed are filled in lazily by `norm()`, so
-  the step fields always exist without rewriting the seed data.
-- `po` must be required server-side too — the sign-off endpoint should reject a
-  signature with no PO number.
-- Photos are a count only; there is no real camera or upload in the prototype.
-- The logo is a redraw, not the supplied artwork — swap `MPF()` for the real
-  asset before this goes anywhere real. The red is my read of the logo; it is one
-  line at the top of the stylesheet if you have the exact brand hex.
-- Machine fleet numbers (`SVPH…`) and the site codes are left as they were, on the
-  basis that they belong to the customers whose machines MPF services.
-- All bars, sheets, the Add Part modal and the office page are positioned inside
-  the phone frame (absolute, not fixed), so nothing escapes the mockup.
-
-
----
+Access is data-driven: the `access` field in the `FITTERS` list at the top of each
+script decides which of the two experiences a person gets, matching the Employees
+table in the backend.
 
 ## 2 · MPF admin backend — `admin.html`
 
@@ -138,7 +67,8 @@ and tables. Eight sections:
    fault, work carried out, labour, the marked checklist rows (checked in green,
    failed in red), parts, photos, and the sign-off panel with the PO number.
 4. **Employees** — who is on the clock, open sheets each, what they are on now,
-   hours this week, and each person's **access level**. *Full Access* can assign
+   hours this week, and each person's **access level** (the same field the two
+   frontends read). *Full Access* can assign
    job cards to other users; *General Access* can only work the cards assigned to
    them. Stuart is the only full-access user. Tapping the access pill switches a
    person's level.

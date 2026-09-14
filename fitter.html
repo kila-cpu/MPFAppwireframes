@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Machine Job Cards &amp; Clock In/Out &mdash; prototype</title>
+<title>MPF &mdash; Fitter app (general access)</title>
 <style>
   :root{
     /* brand — MPF (Machine Plant Fitters Ltd.) */
@@ -865,6 +865,12 @@
     font-size:18px;font-weight:850;cursor:pointer;font-family:inherit;letter-spacing:-.015em}
   .wznext:active{background:var(--red-press)}
 
+  .viewswitch{display:flex;gap:4px;background:rgba(255,255,255,.7);border:1px solid var(--hairline);
+    border-radius:999px;padding:4px;backdrop-filter:blur(6px)}
+  .viewswitch .vs{text-decoration:none;padding:9px 18px;border-radius:999px;font-size:14px;
+    font-weight:750;color:var(--page-sub);white-space:nowrap}
+  .viewswitch .vs:hover{color:var(--page-ink)}
+  .viewswitch .vs.on{background:var(--red);color:#fff}
   .pbtns{display:flex;gap:12px;flex-wrap:wrap;justify-content:center}
   a.restart{text-decoration:none}
   .restart{margin-top:4px;background:rgba(255,255,255,.7);border:1px solid var(--hairline);
@@ -881,7 +887,7 @@
 
 <header class="masthead">
   <div class="mastmark" id="mastMark"></div>
-  <p class="eyebrow">Feature prototype</p>
+  <p class="eyebrow">Fitter &mdash; general access</p>
   <h1>Machine Job Cards</h1>
   <p>Plant job sheets and <strong>clock in / clock out</strong>. Clock in on the home screen, then
   work a sheet through five steps &mdash; <strong>Start, Details, Work, Parts, End</strong> &mdash;
@@ -909,8 +915,8 @@
         <section class="view active" data-view="home">
           <div class="hero">
             <div class="hrow">
-              <span class="hav" id="homeAv">ST</span>
-              <div class="hgreet"><b id="hGreet">Good Afternoon, Stuart</b>
+              <span class="hav" id="homeAv">DE</span>
+              <div class="hgreet"><b id="hGreet">Good Afternoon, Declan</b>
                 <span><i class="d" id="hDot"></i><em style="font-style:normal" id="hTime">14:13</em></span></div>
               <button class="hico" id="hSun" aria-label="Weather">&#9728;&#65039;</button>
               <button class="hico" id="hBell" aria-label="Notifications">&#128276;</button>
@@ -1096,6 +1102,10 @@
       <div class="toast" id="toast"><span class="ti" id="toastIc"></span><span id="toastTxt"></span></div>
     </div>
   </div>
+  <div class="viewswitch">
+    <a class="vs" href="full.html">Full access</a>
+    <a class="vs on" href="fitter.html">Fitter</a>
+  </div>
   <div class="pbtns">
     <a class="restart" href="index.html">%HOME% All wireframes</a>
     <button class="restart" id="restartBtn">%SWAP% Restart demo</button>
@@ -1192,7 +1202,7 @@
   /* ============================================================
      Demo data
      ============================================================ */
-  var ME="Stuart";
+  var ME="Declan Byrne";
 
   var MACHINES=[
     ["Sunward SWE25UF Mini Excavator","SVPH2871","🚜"],
@@ -1281,14 +1291,14 @@
          type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Hydraulic hose burst on the boom ram — losing oil. Machine is off hire until it is repaired.",
          adminNote:"Hose kit came in yesterday, it is on the rack by the press. Priority — hire due back Wednesday.",
-         fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",parts:[],
+         fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",parts:[],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1145",fleet:"SVPH1140",loc:"Onsite",site:"SV748 Clonburris",
          type:"Breakdown",pri:"High",raised:"7 Sep 2026",
          fault:"Will not crank. Operator reports a single click then nothing — suspect starter motor.",
          adminNote:"Ring the site foreman on arrival, gate code 4417.",
-         fitter:"Stuart",status:"progress",
+         fitter:"Declan Byrne",status:"progress",
          sessions:[{i:SHIFT_IN+18*60000,o:SHIFT_IN+112*60000},
                    {i:SHIFT_IN+134*60000,o:SHIFT_IN+188*60000}],
          work:"Tested batteries — both good at 12.7V. Stripped starter, solenoid contacts burnt out.",
@@ -1304,7 +1314,7 @@
         {no:"JC-1141",fleet:"SVPH0885",loc:"Workshop",site:"MPF workshop",
          type:"12 Week Inspection",pri:"Normal",raised:"4 Sep 2026",
          fault:"Statutory 12 week thorough examination plus routine service.",
-         adminNote:"",fitter:"Stuart",status:"po",
+         adminNote:"",fitter:"Declan Byrne",status:"po",
          sessions:[{i:todayAt(7,42)-86400000,o:todayAt(7,42)-86400000+150*60000}],
          work:"12 week examination completed, no defects found. Service carried out — engine oil, oil filter, air filter and fuel filter replaced. Boom and carriage greased, forks and chains checked.",
          meter:"4182.5",
@@ -1316,7 +1326,7 @@
         {no:"JC-1136",fleet:"SVPH3012",loc:"Onsite",site:"SV790 Donabate",
          type:"Service",pri:"Normal",raised:"3 Sep 2026",
          fault:"500 hour service and drum scraper adjustment.",
-         adminNote:"",fitter:"Stuart",status:"signed",
+         adminNote:"",fitter:"Declan Byrne",status:"signed",
          sessions:[{i:todayAt(7,42)-3*86400000,o:todayAt(7,42)-3*86400000+195*60000}],
          work:"Full 500 hour service completed. Drum scrapers adjusted, water system flushed and sprinkler bars cleared.",
          meter:"2914.0",
