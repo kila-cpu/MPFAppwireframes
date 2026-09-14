@@ -20,7 +20,7 @@ Every page links back to the portal, so the whole set click-throughs as one.
 
 Two separate wireframes, switchable from the pill under the phone or from the
 portal. Both share the MPF shell: home with clock in/out, a **Job Card** tile in
-Quick Access, and the bottom Home / Profile bar.
+Quick Access, and a bottom **Home / Timesheet** bar.
 
 ### `full.html` — full access (Stuart)
 

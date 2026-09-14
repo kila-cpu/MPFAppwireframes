@@ -517,20 +517,6 @@
   .btn.ghost:active{background:var(--field)}
   .btn.wide{flex:1}
 
-  /* ---------- profile rows ---------- */
-  .prow2{display:flex;align-items:center;gap:14px;width:100%;text-align:left;background:#fff;
-    border:0;border-bottom:1px solid var(--line);padding:15px 16px;cursor:pointer;min-height:66px;
-    font-family:inherit}
-  .prow2:last-child{border-bottom:0}
-  .prow2:active{background:var(--panel-bg)}
-  .prow2 .pi{width:42px;height:42px;border-radius:13px;background:var(--red-soft);flex:none;
-    display:flex;align-items:center;justify-content:center;font-size:19px}
-  .prow2 .pt{flex:1;min-width:0}
-  .prow2 .pt b{display:block;font-size:15px;font-weight:800;letter-spacing:-.02em;color:var(--ink)}
-  .prow2 .pt span{display:block;font-size:12.5px;font-weight:600;color:var(--sub);margin-top:2px}
-  .prow2 .pc{flex:none;width:18px;height:18px;color:var(--sub-2)}
-  .prow2 .pc svg{width:18px;height:18px}
-
   /* ---------- sheets ---------- */
   .scrim{position:absolute;inset:0;background:rgba(15,20,30,.5);z-index:60;opacity:0;
     pointer-events:none;transition:opacity .2s}
@@ -994,7 +980,7 @@
         <!-- ============ TIMESHEET ============ -->
         <section class="view" data-view="time">
           <div class="topbar">
-            <button class="rbtn" data-nav="profile" aria-label="Back">%ARROW_L%</button>
+            <span></span>
             <div class="ttl"><b>Timesheet</b><small id="tsHeadSub"></small></div>
             <span></span>
           </div>
@@ -1027,15 +1013,6 @@
           <div class="homebar"></div>
         </section>
 
-        <!-- ============ PROFILE ============ -->
-        <section class="view" data-view="profile">
-          <div class="topbar">
-            <span></span>
-            <div class="ttl"><b>Profile</b><small id="pfSub"></small></div>
-            <span></span>
-          </div>
-          <div class="scroll grey"><div class="body hasTabs">
-            <section class="card" style="padding:0"><div id="pfRows"></div></section>
           </div></div>
           <nav class="tabbar"><div class="in" data-tabs></div></nav>
           <div class="homebar"></div>
@@ -1173,7 +1150,7 @@
     MAIL_S:sv('<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',2.4),
     /* bottom tab icons, as in the app */
     T_GRID:'<svg viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="8" height="8" rx="1.8"/><rect x="13" y="3" width="8" height="8" rx="1.8"/><rect x="3" y="13" width="8" height="8" rx="1.8"/><rect x="13" y="13" width="8" height="8" rx="1.8"/></svg>',
-    T_USER:sv('<path d="M4.5 20.5v-1.8A4.7 4.7 0 0 1 9.2 14h5.6a4.7 4.7 0 0 1 4.7 4.7v1.8"/><circle cx="12" cy="8" r="4.2"/>',1.9)
+    T_CLOCK:sv('<circle cx="12" cy="12" r="8.6"/><path d="M12 7V12l3.4 2.1"/>',1.9)
   };
   function ic(k){return I[k]||"";}
   /* one-time icon-token substitution in the static markup */
@@ -1548,9 +1525,9 @@
   /* ============================================================
      Views + bottom tabs
      ============================================================ */
-  var TABS=[["home","T_GRID","Home"],["profile","T_USER","Profile"]];
+  var TABS=[["home","T_GRID","Home"],["time","T_CLOCK","Timesheet"]];
   /* which bottom tab lights up for the view we are on */
-  var TAB_OF={home:"home",jobs:"home",job:"home",newjob:"home",profile:"profile",time:"profile"};
+  var TAB_OF={home:"home",jobs:"home",job:"home",newjob:"home",time:"time"};
   function renderTabs(){
     var on=TAB_OF[S.view]||"home";
     var html=TABS.map(function(x){
@@ -1593,7 +1570,6 @@
     if(S.view==="jobs") renderJobsView();
     if(S.view==="newjob") renderNew();
     if(S.view==="time") renderTime();
-    if(S.view==="profile") renderProfile();
     if(S.cur) renderWizard();
   }
 
@@ -1652,14 +1628,6 @@
   /* ============================================================
      Profile — role switch and the timesheet, nothing else
      ============================================================ */
-  function renderProfile(){
-    $("pfSub").textContent=ME+" · workshop fitter";
-    $("pfRows").innerHTML='<button class="prow2" data-a="time"><span class="pi">⏱</span>'+
-      '<span class="pt"><b>Timesheet</b><span>'+hrs(bookedTodayMs())+' h booked today</span></span>'+
-      '<span class="pc">'+ic("CHEV")+'</span></button>';
-    $("pfRows").firstChild.addEventListener("click",function(){ go("time"); });
-  }
-
   /* ============================================================
      Timesheet clock card
      ============================================================ */
