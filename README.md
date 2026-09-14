@@ -67,11 +67,27 @@ a read-only copy and must enter a **PO number** before they can sign. Their
 signature and PO come back onto the sheet. **View PDF** on any row opens the same
 read-only view.
 
-## One role
+## Access levels
 
-The prototype is the **fitter's** app. There is no role switcher — the real app
-signs you in as one person. Raising and assigning sheets from an admin side is
-not in this build.
+The app signs you in as one person — there is no role switcher. **Stuart** is
+signed in, and he holds **Full Access**.
+
+Both levels can do the everyday work: create a job sheet with **+ New Job Sheet**,
+open the sheets assigned to them, and work them through all five steps.
+
+**Full Access adds one thing: assigning job sheets to other people.**
+
+- A scope switcher above the filters — **My sheets / Unassigned / Everyone**
+- An **Assign** / **Reassign** button on any open sheet card
+- A banner when sheets are sitting unassigned, linking straight to them
+- The Start step's fitter field becomes an **Assigned to** picker, listing each
+  employee with their access level, open sheet count and whether they are on the
+  clock
+
+A **General Access** user sees none of that: no scope switcher, no assign
+buttons, no unassigned banner — just their own sheets, which they can still
+create and work in full. Flip `access` in the `FITTERS` list at the top of the
+script to see it.
 
 ## Rules built in
 

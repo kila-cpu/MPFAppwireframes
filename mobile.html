@@ -677,6 +677,13 @@
   .shmark svg{width:52px;height:auto;display:block}
   .shhead .ht b{display:block;font-size:22px;font-weight:850;letter-spacing:-.035em;line-height:1.2}
   .shhead .ht span{display:block;font-size:14px;font-weight:600;color:var(--sub-2);margin-top:2px}
+  .scoperow{display:flex;gap:8px;padding:2px 16px 12px;background:#fff;flex:0 0 auto}
+  .scbtn{flex:1;min-height:40px;border:1.5px solid var(--line-2);background:#fff;border-radius:11px;
+    font-size:13px;font-weight:750;color:var(--sub);cursor:pointer;font-family:inherit;
+    display:flex;align-items:center;justify-content:center;gap:6px;padding:0 6px}
+  .scbtn i{font-style:normal;font-weight:850;color:var(--sub-2);font-size:12px}
+  .scbtn.on{background:var(--black,#1C1C1C);border-color:var(--black,#1C1C1C);color:#fff}
+  .scbtn.on i{color:rgba(255,255,255,.7)}
   .fchips{display:flex;gap:10px;overflow-x:auto;padding:4px 16px 16px;background:#fff;flex:0 0 auto;
     scrollbar-width:none}
   .fchips::-webkit-scrollbar{display:none}
@@ -703,6 +710,13 @@
   .shpill.active{background:var(--red-soft);color:var(--red-text)}
   .shcard .meta{font-size:14px;font-weight:600;color:var(--sub-2);margin-top:9px}
   .shcard .stp{font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
+  .cardbtns{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
+  .unass{color:var(--red-text);font-weight:800}
+  .asgbtn{margin-top:13px;border:1.5px solid var(--line-2);color:var(--ink);background:var(--field);
+    border-radius:10px;min-height:44px;padding:0 14px;font-size:15px;font-weight:800;cursor:pointer;
+    display:inline-flex;align-items:center;gap:9px;font-family:inherit}
+  .asgbtn svg{width:17px;height:17px}
+  .asgbtn:active{background:var(--line-2)}
   .pdfbtn{margin-top:13px;border:1.5px solid var(--red);color:var(--red);background:#fff;
     border-radius:10px;min-height:44px;padding:0 16px;font-size:15px;font-weight:800;cursor:pointer;
     display:inline-flex;align-items:center;gap:9px;font-family:inherit}
@@ -923,6 +937,7 @@
             <div class="ht"><b>Plant job sheets</b><span>Job cards &amp; service records</span></div>
             <span class="shmark" id="shMark"></span>
           </div>
+          <div class="scoperow" id="shScope" hidden></div>
           <div class="fchips" id="shChips"></div>
           <div class="scroll grey"><div class="body hasTabs">
             <div class="banner" id="jbBanner" hidden>
@@ -1123,6 +1138,7 @@
     LOCK:sv('<rect x="4.5" y="10.5" width="15" height="10" rx="2"/><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"/>',1.8),
     COPY:sv('<rect x="8.5" y="8.5" width="12" height="12" rx="2"/><path d="M15.5 5.5h-9a2 2 0 0 0-2 2v9"/>',1.8),
     SIGN:sv('<path d="M3 19.5c3.5 0 4-13 7-13s1.5 9 4 9 2.2-4 4-4 2.5 2.5 3 3"/><path d="M3 21.5h18"/>',1.8),
+    USERS:sv('<path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 20v-1.4a4 4 0 0 0-3-3.86"/><path d="M16.4 4.2a3.5 3.5 0 0 1 0 6.6"/>',1.8),
     HOME:sv('<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1Z"/>',1.9),
     SWAP:sv('<path d="M20 11.5A8 8 0 0 0 6.2 6M4 12.5A8 8 0 0 0 17.8 18"/><path d="M20 5.5v6h-6M4 18.5v-6h6"/>',1.9),
     CAM:sv('<rect x="2.5" y="6.5" width="19" height="13.5" rx="2.6"/><circle cx="12" cy="13.2" r="3.8"/><path d="M8.5 6.5 10 3.8h4l1.5 2.7"/>',1.7),
@@ -1190,13 +1206,21 @@
     ["Atlas Copco XAS 88 Compressor","SVPH0471","⚙️"],
     ["Genie S-60 Boom Lift","SVPH3388","🏗"]
   ];
+  /* access: "full" can assign job sheets to other users; "general" cannot */
   var FITTERS=[
-    {n:"Stuart",        r:"Workshop · plant", on:true},
-    {n:"Csaba Varga",   r:"Workshop · plant", on:true},
-    {n:"Declan Byrne",  r:"Mobile fitter",         on:true},
-    {n:"Martin Kelly",  r:"Mobile fitter",         on:false},
-    {n:"Istvan Horvath",r:"Workshop · plant", on:false}
+    {n:"Stuart",        access:"full",    on:true},
+    {n:"Csaba Varga",   access:"general", on:true},
+    {n:"Declan Byrne",  access:"general", on:true},
+    {n:"Martin Kelly",  access:"general", on:false},
+    {n:"Istvan Horvath",access:"general", on:false}
   ];
+  function meFull(){
+    for(var i=0;i<FITTERS.length;i++) if(FITTERS[i].n===ME) return FITTERS[i].access==="full";
+    return false;
+  }
+  function openCount(n){
+    return S.jobs.filter(function(j){return j.fitter===n&&j.status!=="signed";}).length;
+  }
   var SITES=["MPF workshop","SV101 Turvey, Co. Dublin","SV748 Clonburris",
              "SV790 Donabate","SV796 Newcastle — Phase 2","SV814 Holybanks, Swords"];
   var JOBTYPES=["Service","Repair","Breakdown","12 Week Inspection","LOLER Examination"];
@@ -1245,6 +1269,7 @@
       view:"jobs",
       cur:null,
       filter:"all",
+      scope:"mine",
       shiftIn:SHIFT_IN,
       shiftOut:null,
       breakMs:22*60000,
@@ -1645,9 +1670,38 @@
   }
   var CHIPS=[["all","All"],["active","Active"],["draft","Draft"],["done","Done"]];
 
+  /* Everyone sees and works their own sheets. Full access can also look at
+     unassigned sheets and everyone else's, in order to hand them out. */
   function sheetsFor(){
-    return S.jobs.filter(function(j){return j.fitter===ME;});
+    if(!meFull()||S.scope==="mine") return S.jobs.filter(function(j){return j.fitter===ME;});
+    if(S.scope==="unassigned") return S.jobs.filter(function(j){return !j.fitter;});
+    return S.jobs.slice();
   }
+  var SCOPES=[["mine","My sheets"],["unassigned","Unassigned"],["all","Everyone"]];
+  /* Full access only: hand a job sheet to another employee. */
+  function assignOpen(no){
+    var j=job(no);
+    pickOpen({title:(j.fitter?"Reassign ":"Assign ")+"#"+no, ph:"Search employees…",
+      rows:FITTERS.map(function(f){
+        var n=openCount(f.n);
+        return {v:f.n,b:f.n,
+          s:(f.access==="full"?"Full access":"General access")+" · "+n+" open sheet"+
+            (n===1?"":"s")+(f.n===ME?" · you":""),
+          person:true,live:f.on,on:j.fitter===f.n};
+      }),
+      pick:function(v){
+        var was=j.fitter;
+        if(was===v){ toast("<b>#"+esc(no)+"</b> is already with "+esc(v.split(" ")[0]),"ℹ️"); return; }
+        j.fitter=v;
+        if(j.status==="unassigned") j.status="assigned";
+        S.fresh=no;
+        renderJobsView(); renderTabs();
+        toast(was
+          ? "<b>#"+esc(no)+"</b> moved from "+esc(was.split(" ")[0])+" to <b>"+esc(v.split(" ")[0])+"</b>"
+          : "<b>#"+esc(no)+"</b> assigned to <b>"+esc(v.split(" ")[0])+"</b>","👷");
+      }});
+  }
+
   function sheetLabel(j){
     return "#"+j.no+" — "+machOf(j.fleet)[0].split(" ").slice(0,2).join(" ")+
            " — "+String(j.type).toLowerCase();
@@ -1662,6 +1716,24 @@
 
   function renderJobsView(){
     var list=sheetsFor();
+    var full=meFull();
+
+    /* scope switcher only exists for full access — general access has one list */
+    $("shScope").hidden=!full;
+    if(full){
+      $("shScope").innerHTML=SCOPES.map(function(sc){
+        var n=sc[0]==="mine"?S.jobs.filter(function(j){return j.fitter===ME;}).length
+          :sc[0]==="unassigned"?S.jobs.filter(function(j){return !j.fitter;}).length
+          :S.jobs.length;
+        return '<button class="scbtn'+(S.scope===sc[0]?" on":"")+'" data-sc="'+sc[0]+'">'+
+          sc[1]+' <i>'+n+'</i></button>';
+      }).join("");
+      [].forEach.call($("shScope").children,function(b){
+        b.addEventListener("click",function(){
+          S.scope=b.dataset.sc; S.filter="all"; renderJobsView();
+        });
+      });
+    }
 
     $("shChips").innerHTML=CHIPS.map(function(c){
       var n=c[0]==="all"?list.length
@@ -1675,28 +1747,49 @@
 
     /* the one banner worth keeping: you cannot start a sheet without being clocked in */
     var bn=$("jbBanner");
+    var un=S.jobs.filter(function(j){return !j.fitter;});
     if(!clockedIn()){
       bn.hidden=false; bn.className="banner amber"; $("jbIc").innerHTML=ic("ALERT");
       $("jbBannerTxt").innerHTML="You are not clocked in. <b>Clock in on the home screen</b> "+
         "before starting a job sheet.";
       $("jbGo").hidden=true;
+    } else if(full&&un.length&&S.scope!=="unassigned"){
+      bn.hidden=false; bn.className="banner steel"; $("jbIc").innerHTML=ic("USERS");
+      $("jbBannerTxt").innerHTML="<b>"+un.length+" job sheet"+(un.length===1?" is":"s are")+
+        "</b> not assigned to anyone yet.";
+      $("jbGo").hidden=false;
+      $("jbGo").innerHTML="Hand them out "+ic("CHEV");
     } else bn.hidden=true;
 
     var rows=list.filter(function(j){return S.filter==="all"||bucket(j)===S.filter;});
     $("shList").innerHTML=rows.length?rows.map(function(j){
       var b=bucket(j);
       var lab=b==="done"?"Complete":b==="active"?"Active":"Draft";
-      return '<button class="shcard st-'+b+(S.fresh===j.no?" flash":"")+'" data-no="'+j.no+'">'+
+      var who=j.fitter?j.fitter.split(" ")[0]:"Unassigned";
+      /* only a full-access user can hand a sheet to someone else, and only
+         while it is still open */
+      var canAssign=full&&j.status!=="signed";
+      return '<div class="shcard st-'+b+(S.fresh===j.no?" flash":"")+
+        '" data-no="'+j.no+'" role="button" tabindex="0">'+
         '<div class="r1"><b>'+esc(sheetLabel(j))+'</b>'+
           '<span class="shpill '+b+'">'+lab+'</span></div>'+
-        '<div class="meta">'+esc(isoDate(j))+' &middot; '+esc((j.fitter||"Unassigned").split(" ")[0])+'</div>'+
+        '<div class="meta">'+esc(isoDate(j))+' &middot; '+
+          (j.fitter?esc(who):'<span class="unass">Unassigned</span>')+'</div>'+
         '<div class="stp">Step '+step(j)+' of 5</div>'+
-        '<span class="pdfbtn" data-pdf="'+j.no+'">'+ic("DOCF")+' View PDF</span>'+
-        '</button>';
+        '<div class="cardbtns">'+
+          '<span class="pdfbtn" data-pdf="'+j.no+'">'+ic("DOCF")+' View PDF</span>'+
+          (canAssign?'<span class="asgbtn" data-asg="'+j.no+'">'+ic("USERS")+' '+
+            (j.fitter?"Reassign":"Assign")+'</span>':'')+
+        '</div></div>';
     }).join(""):'<div class="emptybox"><div class="ei">🔧</div><span>No job sheets in this list</span></div>';
 
     [].forEach.call($("shList").querySelectorAll(".shcard"),function(b){
+      b.addEventListener("keydown",function(e){
+        if(e.key==="Enter"||e.key===" "){ e.preventDefault(); openJob(b.dataset.no); }
+      });
       b.addEventListener("click",function(e){
+        var a=e.target.closest?e.target.closest("[data-asg]"):null;
+        if(a){ e.stopPropagation(); assignOpen(a.dataset.asg); return; }
         var p=e.target.closest?e.target.closest("[data-pdf]"):null;
         if(p){ e.stopPropagation(); officeOpen(p.dataset.pdf,true); return; }
         openJob(b.dataset.no);
@@ -1704,6 +1797,9 @@
     });
     S.fresh=null;
   }
+  $("jbGo").addEventListener("click",function(){
+    S.scope="unassigned"; S.filter="all"; renderJobsView();
+  });
   $("shNew").addEventListener("click",function(){
     if(!clockedIn()){
       toast("Clock in on the home screen before starting a job sheet","⚠️");
@@ -1824,10 +1920,20 @@
   function stepStart(j,ro){
     var d=(j.sDate||"").split("-");
     var shown=d.length===3?(d[2]+" / "+d[1]+" / "+d[0]):"";
+    /* a full-access user can point the sheet at somebody else; general access
+       fills in their own name */
+    var who=j.fitter||j.sFitter;
+    var fitterField=(meFull()&&!ro)
+      ? '<button class="picker" id="wFitterPick"><span class="pt"><b'+
+        (who?'':' class="ph"')+'>'+esc(who||"Select employee…")+'</b>'+
+        (who&&who!==ME?'<span style="font-family:inherit">assigned to them</span>':
+          (who?'<span style="font-family:inherit">you</span>':''))+
+        '</span><span class="chev">'+ic("CHEV")+'</span></button>'
+      : '<input type="text" id="wFitter" value="'+esc(j.sFitter)+'" placeholder="Enter name"'+
+        (ro?" readonly":"")+'>';
     return '<div class="fsec"><b>Job start</b><i></i></div>'+
-      '<div class="wf"><label>Fitter&rsquo;s name</label>'+
-        '<input type="text" id="wFitter" value="'+esc(j.sFitter)+'" placeholder="Enter name"'+
-        (ro?" readonly":"")+'></div>'+
+      '<div class="wf"><label>'+(meFull()?"Assigned to":"Fitter&rsquo;s name")+'</label>'+
+        fitterField+'</div>'+
       '<div class="wf"><label>Date</label>'+
         '<input type="text" id="wDate" value="'+esc(shown)+'" placeholder="DD / MM / YYYY"'+
         (ro?" readonly":"")+'></div>'+
@@ -1953,6 +2059,22 @@
     function on(id,ev,fn){ var e=$(id); if(e) e.addEventListener(ev,fn); }
 
     on("wFitter","input",function(){ j.sFitter=this.value; });
+    on("wFitterPick","click",function(){
+      pickOpen({title:"Assign this job sheet",ph:"Search employees…",
+        rows:FITTERS.map(function(f){
+          var n=openCount(f.n);
+          return {v:f.n,b:f.n,
+            s:(f.access==="full"?"Full access":"General access")+" · "+n+" open sheet"+
+              (n===1?"":"s")+(f.n===ME?" · you":""),
+            person:true,live:f.on,on:(j.fitter||j.sFitter)===f.n};
+        }),
+        pick:function(v){
+          j.fitter=v; j.sFitter=v.split(" ")[0];
+          if(j.status==="unassigned") j.status="assigned";
+          renderWizard(); renderTabs();
+          toast("<b>#"+esc(j.no)+"</b> assigned to <b>"+esc(v.split(" ")[0])+"</b>","👷");
+        }});
+    });
     on("wDate","input",function(){
       var p=this.value.replace(/\s/g,"").split("/");
       if(p.length===3&&p[2].length===4) j.sDate=p[2]+"-"+pad(+p[1])+"-"+pad(+p[0]);
