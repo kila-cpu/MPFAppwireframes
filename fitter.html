@@ -977,6 +977,20 @@
           <div class="homebar"></div>
         </section>
 
+        <!-- ============ NEW JOB SHEET (details + assign) ============ -->
+        <section class="view" data-view="newjob">
+          <div class="topbar">
+            <button class="rbtn" data-nav="jobs" aria-label="Back">%ARROW_L%</button>
+            <div class="ttl"><b>New job sheet</b><small id="njNo"></small></div>
+            <span></span>
+          </div>
+          <div class="scroll"><div class="wzbody hasBar" id="njBody"></div></div>
+          <div class="wzfoot">
+            <button class="wznext" id="njSave">Save &amp; start</button>
+          </div>
+          <div class="homebar"></div>
+        </section>
+
         <!-- ============ TIMESHEET ============ -->
         <section class="view" data-view="time">
           <div class="topbar">
@@ -1257,6 +1271,11 @@
   var MON=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
   var DOW=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
+  /* a self-created job may name a machine that is not in the catalogue */
+  function mach(j){
+    var m=machOf(j.fleet);
+    return [j.machName||m[0], j.fleet||m[1], j.machIcon||m[2]];
+  }
   function machOf(fleet){
     for(var i=0;i<MACHINES.length;i++) if(MACHINES[i][1]===fleet) return MACHINES[i];
     return ["","","⚙️"];
@@ -1531,7 +1550,7 @@
      ============================================================ */
   var TABS=[["home","T_GRID","Home"],["profile","T_USER","Profile"]];
   /* which bottom tab lights up for the view we are on */
-  var TAB_OF={home:"home",jobs:"home",job:"home",profile:"profile",time:"profile"};
+  var TAB_OF={home:"home",jobs:"home",job:"home",newjob:"home",profile:"profile",time:"profile"};
   function renderTabs(){
     var on=TAB_OF[S.view]||"home";
     var html=TABS.map(function(x){
@@ -1572,6 +1591,7 @@
     renderTabs();
     if(S.view==="home") renderHome();
     if(S.view==="jobs") renderJobsView();
+    if(S.view==="newjob") renderNew();
     if(S.view==="time") renderTime();
     if(S.view==="profile") renderProfile();
     if(S.cur) renderWizard();
@@ -1714,7 +1734,7 @@
   }
 
   function sheetLabel(j){
-    return "#"+j.no+" — "+machOf(j.fleet)[0].split(" ").slice(0,2).join(" ")+
+    return "#"+j.no+" — "+mach(j)[0].split(" ").slice(0,2).join(" ")+
            " — "+String(j.type).toLowerCase();
   }
   function isoDate(j){
@@ -1786,7 +1806,7 @@
           '<span class="shpill '+b+'">'+lab+'</span></div>'+
         '<div class="meta">'+esc(isoDate(j))+' &middot; '+
           (j.fitter?esc(who):'<span class="unass">Unassigned</span>')+'</div>'+
-        '<div class="stp">Step '+step(j)+' of 5</div>'+
+        '<div class="stp">Step '+step(j)+' of 4</div>'+
         '<div class="cardbtns">'+
           '<span class="pdfbtn" data-pdf="'+j.no+'">'+ic("DOCF")+' View PDF</span>'+
           (canAssign?'<span class="asgbtn" data-asg="'+j.no+'">'+ic("USERS")+' '+
@@ -1822,7 +1842,8 @@
     /* ============================================================
      Job sheet wizard — Start / Details / Work / Parts / End
      ============================================================ */
-  var STEPS=["Start","Details","Work","Parts","End"];
+  /* Details are set by whoever raised the job, so the fitter never re-enters them */
+  var STEPS=["Start","Work","Parts","End"];
   var EQUIP=["Excavator","Dumper","Telehandler","Roller","Compressor","Boom lift","Generator"];
   var MODELS=["XA400","Bell B25","CAT 320","JCB 540-140","Kubota KX027-4","Bomag BW120",
               "Terex TA6S","Sunward SWE25UF","Genie S-60","Manitou MT625"];
@@ -1840,7 +1861,7 @@
   function norm(j){
     if(j._n) return j;
     j._n=true;
-    var mc=machOf(j.fleet);
+    var mc=mach(j);
     j.sFitter=j.sFitter||(j.fitter?j.fitter.split(" ")[0]:"");
     j.sDate=j.sDate||isoDate(j);
     j.sFrom=j.sFrom||""; j.sTo=j.sTo||"";
@@ -1856,7 +1877,7 @@
     j.parts=(j.parts||[]).map(function(p){
       return p.name?p:{name:p.p,num:p.c,qty:p.q};
     });
-    j.wstep=j.wstep||(j.status==="signed"?5:1);
+    j.wstep=j.wstep||(j.status==="signed"?4:1);
     return j;
   }
   function step(j){ return norm(j).wstep||1; }
@@ -1872,26 +1893,10 @@
   function openJob(no){
     S.cur=no; S.fresh=null;
     var j=norm(job(no));
-    S.wstep=Math.min(5,Math.max(1,j.wstep||1));
+    S.wstep=Math.min(4,Math.max(1,j.wstep||1));
     show("job");
     renderWizard();
   }
-  function newSheet(){
-    var n="JC-"+S.seq; S.seq++;
-    var d=new Date();
-    var j={no:n,fleet:"",loc:"Workshop",site:"",type:"Service",pri:"Normal",
-      raised:d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear(),
-      fault:"",adminNote:"",fitter:ME,status:"assigned",sessions:[],work:"",meter:"",parts:[],
-      link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null,
-      _n:true,sFitter:ME.split(" ")[0],sDate:d.getFullYear()+"-"+pad(d.getMonth()+1)+"-"+pad(d.getDate()),
-      sFrom:clk(Date.now()),sTo:"",equip:"",model:"",serial:"",mhours:"",contact:"",
-      jtype:"Service",checks:{},performed:"",photos:0,comments:"",notes:"",wstep:1,isNew:true};
-    S.jobs.unshift(j);
-    S.cur=n; S.wstep=1;
-    show("job"); renderWizard(); renderTabs();
-    toast("New job sheet <b>#"+esc(n)+"</b> started","📋");
-  }
-
   function renderWizard(){
     var j=norm(job(S.cur)); if(!j) return;
     var ro=sheetLocked(j);
@@ -1905,11 +1910,11 @@
       b.addEventListener("click",function(){ goStep(+b.dataset.s); });
     });
 
-    $("wzBody").innerHTML=[stepStart,stepDetails,stepWork,stepParts,stepEnd][S.wstep-1](j,ro);
+    $("wzBody").innerHTML=[stepStart,stepWork,stepParts,stepEnd][S.wstep-1](j,ro);
     bindStep(j,ro);
 
     $("wzBack").hidden=(S.wstep===1);
-    $("wzNext").textContent=S.wstep===5
+    $("wzNext").textContent=S.wstep===4
       ? (j.status==="signed"?"Back to job sheets":"Complete job sheet") : "Next";
     document.querySelector('.view[data-view="job"] .scroll').scrollTop=0;
   }
@@ -1922,7 +1927,7 @@
   $("wzBack").addEventListener("click",function(){ if(S.wstep>1) goStep(S.wstep-1); });
   $("wzNext").addEventListener("click",function(){
     var j=norm(job(S.cur));
-    if(S.wstep<5){ goStep(S.wstep+1); return; }
+    if(S.wstep<4){ goStep(S.wstep+1); return; }
     if(j.status==="signed"){ go("jobs"); return; }
     completeSheet(j);
   });
@@ -1942,7 +1947,21 @@
         '</span><span class="chev">'+ic("CHEV")+'</span></button>'
       : '<input type="text" id="wFitter" value="'+esc(j.sFitter)+'" placeholder="Enter name"'+
         (ro?" readonly":"")+'>';
-    return '<div class="fsec"><b>Job start</b><i></i></div>'+
+    var mc=mach(j);
+    var loc=j.loc==="Workshop"?"MPF workshop":(j.site||"—");
+    /* the job details come from whoever raised the sheet — shown, not editable */
+    var brief='<section class="card" style="margin-bottom:20px"><h2>'+esc(j.no)+
+      '<span class="sp">'+esc(j.jtype)+'</span></h2><div class="cbody">'+
+      '<div class="jr2" style="margin-bottom:14px"><span class="mico">'+mc[2]+'</span>'+
+      '<div class="jbody"><b class="mn">'+esc(j.model||mc[0])+'</b>'+
+      (j.fleet?'<span class="fl">'+esc(j.fleet)+'</span>':'')+'</div></div>'+
+      '<dl class="drows">'+
+      '<div class="drow"><dt>Where</dt><dd>'+esc(loc)+'</dd></div>'+
+      (j.contact?'<div class="drow"><dt>Site contact</dt><dd>'+esc(j.contact)+'</dd></div>':'')+
+      '<div class="drow"><dt>Fault</dt><dd>'+esc(j.fault||"—")+'</dd></div>'+
+      '</dl></div></section>';
+
+    return brief+'<div class="fsec"><b>Job start</b><i></i></div>'+
       '<div class="wf"><label>'+(meFull()?"Assigned to":"Fitter&rsquo;s name")+'</label>'+
         fitterField+'</div>'+
       '<div class="wf"><label>Date</label>'+
@@ -1959,35 +1978,7 @@
   }
 
   /* ---------- step 2 · Details ---------- */
-  function stepDetails(j,ro){
-    function opts(arr,v){
-      return arr.map(function(o){
-        return '<option'+(v===o?" selected":"")+'>'+esc(o)+'</option>';}).join("");
-    }
-    return '<div class="fsec"><b>Equipment details</b><i></i></div>'+
-      '<div class="wf"><label>Equipment type</label><select id="wEquip"'+(ro?" disabled":"")+'>'+
-        '<option value="">Select equipment type...</option>'+opts(EQUIP,j.equip)+'</select></div>'+
-      '<div class="wf"><label>Make &amp; model</label><select id="wModel"'+(ro?" disabled":"")+'>'+
-        '<option value="">Select make &amp; model...</option>'+opts(MODELS,j.model)+'</select></div>'+
-      '<div class="wf2">'+
-        '<div class="wf"><label>Serial no.</label><input type="text" id="wSerial" value="'+
-          esc(j.serial)+'" placeholder="Enter serial no."'+(ro?" readonly":"")+'></div>'+
-        '<div class="wf"><label>Machine hours</label><input type="text" inputmode="decimal" id="wMh" value="'+
-          esc(j.mhours)+'" placeholder="1234 hrs"'+(ro?" readonly":"")+'></div>'+
-      '</div>'+
-      '<div class="fsec mt"><b>Site info</b><i></i></div>'+
-      '<div class="wf"><label>Site</label><select id="wSite"'+(ro?" disabled":"")+'>'+
-        '<option value="">Select site...</option>'+opts(SITES,j.site)+'</select></div>'+
-      '<div class="wf"><label>Contact number</label><input type="tel" id="wContact" value="'+
-        esc(j.contact)+'" placeholder="Enter number"'+(ro?" readonly":"")+'></div>'+
-      '<div class="fsec mt"><b>Job type</b><i></i></div>'+
-      JTYPES.map(function(t){
-        return '<button class="radio'+(j.jtype===t?" on":"")+'" data-jt="'+esc(t)+'"'+
-          (ro?" disabled":"")+'><span class="dot"></span>'+esc(t)+'</button>';
-      }).join("");
-  }
-
-  /* ---------- step 3 · Work ---------- */
+  /* ---------- step 2 · Work ---------- */
   function stepWork(j,ro){
     var rows=CHECKLIST.map(function(item,n){
       var v=j.checks[n]||"";
@@ -2016,7 +2007,7 @@
         (ro?" readonly":"")+'>'+esc(j.notes)+'</textarea></div>';
   }
 
-  /* ---------- step 4 · Parts ---------- */
+  /* ---------- step 3 · Parts ---------- */
   function stepParts(j,ro){
     return '<div class="prowhead"><b>Parts used</b><i></i>'+
       (ro?"":'<button class="add" id="wAddPart">+ Add part</button>')+'</div>'+
@@ -2029,7 +2020,7 @@
       }).join(""):'<p class="pempty">No parts added yet.</p>');
   }
 
-  /* ---------- step 5 · End ---------- */
+  /* ---------- step 4 · End ---------- */
   function stepEnd(j,ro){
     function row(k,v,muted){
       return '<div class="row"><span>'+k+'</span><b'+(muted?' class="muted"':'')+'>'+v+'</b></div>';
@@ -2151,7 +2142,7 @@
       return;
     }
     if(S.active&&S.active.no===j.no) stopWork(true);
-    j.status="signed"; j.wstep=5; j.isNew=false;
+    j.status="signed"; j.wstep=4; j.isNew=false;
     j.signedAt=stampNow();
     if(!j.signer) j.signer=j.sFitter||ME;
     S.fresh=j.no;
@@ -2191,6 +2182,98 @@
         function(){toast("Link: <b>"+esc(url)+"</b>","🔗");});
     } else toast("Link: <b>"+esc(url)+"</b>","🔗");
   }
+
+  var EQICON={Excavator:"🚜",Dumper:"🚧",Telehandler:"🏗",Roller:"⚙️",
+              Compressor:"⚙️","Boom lift":"🏗",Generator:"⚙️"};
+
+  /* ---------- raise your own sheet: the job details, then straight into it ---------- */
+  var D=null;
+  function newSheet(){
+    D={no:"JC-"+S.seq,mach:"",fleet:"",equip:"",loc:"Workshop",site:"MPF workshop",contact:"",
+       jtype:"Service",fault:"",fitter:ME};
+    $("njNo").textContent="#"+D.no;
+    show("newjob"); renderNew();
+  }
+  function renderNew(){
+    function opts(arr,v){return arr.map(function(o){
+      return '<option'+(v===o?" selected":"")+'>'+esc(o)+'</option>';}).join("");}
+
+    $("njBody").innerHTML=
+      '<div class="banner steel" style="margin-bottom:18px"><span class="ic">'+ic("INFO")+
+        '</span><div class="bt">Fill in the machine and the job. '+
+        'Once saved you go straight into the job sheet.</div></div>'+
+
+      '<div class="fsec"><b>Job details</b><i></i></div>'+
+      '<div class="wf" id="nwMach"><label>Machine <span class="req">*</span></label>'+
+        '<input type="text" id="njMach" value="'+esc(D.mach)+'" '+
+        'placeholder="e.g. CAT 320 Tracked Excavator" autocomplete="off"></div>'+
+      '<div class="wf"><label>Fleet no. / serial</label>'+
+        '<input type="text" id="njFleet" value="'+esc(D.fleet)+'" '+
+        'placeholder="e.g. SVPH1140" autocomplete="off"></div>'+
+      '<div class="wf"><label>Equipment type</label><select id="njEquip">'+
+        '<option value="">Select equipment type…</option>'+opts(EQUIP,D.equip)+'</select></div>'+
+      '<div class="wf"><label>Where is the work</label><div class="toggle" id="njLoc">'+
+        '<button data-v="Workshop" class="'+(D.loc==="Workshop"?"on":"")+'">🏭 Workshop</button>'+
+        '<button data-v="Onsite" class="'+(D.loc==="Onsite"?"on":"")+'">📍 Onsite</button></div></div>'+
+      (D.loc==="Onsite"?'<div class="wf" id="nwSite"><label>Site <span class="req">*</span></label>'+
+        '<select id="njSite"><option value="">Select site…</option>'+
+        opts(SITES.filter(function(x){return x.indexOf("workshop")<0;}),D.site)+'</select></div>'+
+        '<div class="wf"><label>Site contact number</label><input type="tel" id="njContact" value="'+
+        esc(D.contact)+'" placeholder="Enter number"></div>':'')+
+      '<div class="wf"><label>Job type</label>'+
+        JTYPES.map(function(t){
+          return '<button class="radio'+(D.jtype===t?" on":"")+'" data-jt="'+esc(t)+'">'+
+            '<span class="dot"></span>'+esc(t)+'</button>';
+        }).join("")+'</div>'+
+      '<div class="wf" id="nwFault"><label>Fault / work required <span class="req">*</span></label>'+
+        '<textarea id="njFault" placeholder="What is wrong with the machine, or what is due?">'+
+        esc(D.fault)+'</textarea></div>'+
+
+      '<div class="hint" style="margin-top:4px">This job sheet will be yours to work.</div>';
+
+    $("njMach").addEventListener("input",function(){
+      D.mach=this.value; $("nwMach").classList.remove("bad"); });
+    $("njFleet").addEventListener("input",function(){ D.fleet=this.value; });
+    $("njEquip").addEventListener("change",function(){ D.equip=this.value; });
+    [].forEach.call($("njLoc").children,function(b){
+      b.addEventListener("click",function(){
+        D.loc=b.dataset.v; D.site=D.loc==="Workshop"?"MPF workshop":""; renderNew();
+      });
+    });
+    if($("njSite")) $("njSite").addEventListener("change",function(){ D.site=this.value; });
+    if($("njContact")) $("njContact").addEventListener("input",function(){ D.contact=this.value; });
+    [].forEach.call(document.querySelectorAll("#njBody [data-jt]"),function(b){
+      b.addEventListener("click",function(){ D.jtype=b.dataset.jt; renderNew(); });
+    });
+    $("njFault").addEventListener("input",function(){
+      D.fault=this.value; $("nwFault").classList.remove("bad"); });
+    document.querySelector('.view[data-view="newjob"] .scroll').scrollTop=0;
+  }
+  function bad(id){
+    var el=$(id); if(!el) return;
+    el.classList.add("bad","shake");
+    setTimeout(function(){ if(el) el.classList.remove("shake"); },450);
+  }
+  $("njSave").addEventListener("click",function(){
+    var ok=true;
+    if(!D.mach.trim()){ bad("nwMach"); ok=false; }
+    if(D.loc==="Onsite"&&!D.site){ bad("nwSite"); ok=false; }
+    if(!D.fault.trim()){ bad("nwFault"); ok=false; }
+    if(!ok){ toast("Fill in the highlighted fields","⚠️"); return; }
+    var d=new Date();
+    var j={no:D.no,fleet:D.fleet,loc:D.loc,site:D.loc==="Workshop"?"MPF workshop":D.site,
+      type:D.jtype,pri:"Normal",raised:d.getDate()+" "+MON[d.getMonth()]+" "+d.getFullYear(),
+      fault:D.fault.trim(),adminNote:"",fitter:D.fitter,
+      status:D.fitter?"assigned":"unassigned",sessions:[],work:"",meter:"",parts:[],
+      link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null,
+      machName:D.mach.trim(),machIcon:EQICON[D.equip]||"⚙️",
+      _n:true,equip:D.equip,model:D.mach.trim(),contact:D.contact,jtype:D.jtype,
+      sFitter:ME.split(" ")[0],checks:{},performed:"",photos:0,comments:"",notes:"",wstep:1};
+    S.jobs.unshift(j); S.seq++;
+    S.fresh=j.no; S.filter="all";
+    openJob(j.no);
+    toast("<b>#"+esc(j.no)+"</b> started","📋");
+  });
 
   /* ============================================================
      Job clock in / out
@@ -2240,7 +2323,7 @@
     linkTo=j.sentTo||OFFICE[0].n;
     linkRef="";
     $("lsTitle").innerHTML="Job sheet sign-off<em>"+esc(j.no)+" &middot; "+
-      esc(machOf(j.fleet)[0])+"</em>";
+      esc(mach(j)[0])+"</em>";
     renderLink(j);
     sheetOpen($("linkSheet"));
   }
@@ -2270,7 +2353,7 @@
       '<div class="h-sec" style="margin:20px 2px 10px">What they will see</div>'+
       '<dl class="drows" style="background:var(--panel-bg);border:1px solid var(--line-2);border-radius:14px;padding:14px">'+
         '<div class="drow"><dt>Job card</dt><dd>'+esc(j.no)+' &middot; '+esc(j.type)+'</dd></div>'+
-        '<div class="drow"><dt>Machine</dt><dd>'+esc(machOf(j.fleet)[0])+
+        '<div class="drow"><dt>Machine</dt><dd>'+esc(mach(j)[0])+
           '<br><span class="mono muted">'+esc(j.fleet)+'</span></dd></div>'+
         '<div class="drow"><dt>Location</dt><dd>'+
           esc(j.loc==="Workshop"?"MPF workshop":j.site)+'</dd></div>'+
@@ -2335,8 +2418,8 @@
     $("tsList").innerHTML=todayRows.length?todayRows.map(function(r){
       var j=r[0],live=S.active&&S.active.no===j.no;
       return '<div class="tlrow"><span class="tick'+(live?" live":"")+'">'+
-        (live?ic("PLAY"):machOf(j.fleet)[2])+'</span>'+
-        '<div class="tt"><b>'+esc(j.no)+'</b><span>'+esc(machOf(j.fleet)[0])+' &middot; '+
+        (live?ic("PLAY"):mach(j)[2])+'</span>'+
+        '<div class="tt"><b>'+esc(j.no)+'</b><span>'+esc(mach(j)[0])+' &middot; '+
         esc(j.type)+'</span></div>'+
         '<span class="tv'+(live?" live":"")+'">'+hrs(r[1])+' h</span></div>';
     }).join(""):'<div class="emptybox" style="padding:22px 14px"><div class="ei">'+ic("CLOCK")+
@@ -2386,8 +2469,8 @@
   function sheetSummary(j){
     return '<div class="osumm"><div class="oh"><b>Machine job sheet</b>'+
       '<span class="jn">'+esc(j.no)+'</span></div><div class="cbody">'+
-      '<div class="jr2" style="margin-bottom:14px"><span class="mico">'+machOf(j.fleet)[2]+
-      '</span><div class="jbody"><b class="mn">'+esc(machOf(j.fleet)[0])+'</b>'+
+      '<div class="jr2" style="margin-bottom:14px"><span class="mico">'+mach(j)[2]+
+      '</span><div class="jbody"><b class="mn">'+esc(mach(j)[0])+'</b>'+
       '<span class="fl">'+esc(j.fleet)+'</span></div></div>'+
       '<dl class="drows">'+
       [["Job type",esc(j.type)+(j.pri==="High"?' <span class="pill hi">High</span>':"")],

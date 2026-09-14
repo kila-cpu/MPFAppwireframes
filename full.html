@@ -1794,7 +1794,7 @@
           '<span class="shpill '+b+'">'+lab+'</span></div>'+
         '<div class="meta">'+esc(isoDate(j))+' &middot; '+
           (j.fitter?esc(who):'<span class="unass">Unassigned</span>')+'</div>'+
-        '<div class="stp">Step '+step(j)+' of 5</div>'+
+        '<div class="stp">Step '+step(j)+' of 4</div>'+
         '<div class="cardbtns">'+
           '<span class="pdfbtn" data-pdf="'+j.no+'">'+ic("DOCF")+' View PDF</span>'+
           (canAssign?'<span class="asgbtn" data-asg="'+j.no+'">'+ic("USERS")+' '+
@@ -1836,7 +1836,7 @@
   var EQICON={Excavator:"🚜",Dumper:"🚧",Telehandler:"🏗",Roller:"⚙️",
               Compressor:"⚙️","Boom lift":"🏗",Generator:"⚙️"};
   var JTYPES=["Service","Repair","12 week inspection & tyres"];
-  var STEPNAMES=["Start","Details","Work","Parts","End"];
+  var STEPNAMES=["Start","Work","Parts","End"];
 
   function norm(j){
     if(j._n) return j;
@@ -1849,7 +1849,7 @@
     j.checks=j.checks||{};
     j.performed=j.performed||j.work||"";
     j.parts=(j.parts||[]).map(function(p){ return p.name?p:{name:p.p,num:p.c,qty:p.q}; });
-    j.wstep=j.wstep||(j.status==="signed"?5:1);
+    j.wstep=j.wstep||(j.status==="signed"?4:1);
     return j;
   }
   function step(j){ return norm(j).wstep||1; }
@@ -1877,7 +1877,7 @@
             (j.po?' against <b>'+esc(j.po)+'</b>':'')+'.'
          :j.status==="po"?'Job sheet sent to <b>'+esc(j.sentTo||"the office")+
             '</b> — waiting on a PO number.'
-         :j.fitter?'With <b>'+esc(j.fitter.split(" ")[0])+'</b> — step <b>'+step(j)+' of 5</b>.'
+         :j.fitter?'With <b>'+esc(j.fitter.split(" ")[0])+'</b> — step <b>'+step(j)+' of 4</b>.'
          :'Not assigned to anyone yet.')+'</div></div>'+
 
       '<section class="card"><h2><span class="n">1</span> Job details</h2><div class="cbody">'+
@@ -1902,7 +1902,7 @@
       '</div></section>'+
 
       '<section class="card"><h2><span class="n">3</span> Fitter&rsquo;s progress'+
-        '<span class="sp">step '+step(j)+' of 5</span></h2><div class="cbody">'+
+        '<span class="sp">step '+step(j)+' of 4</span></h2><div class="cbody">'+
         '<div class="steps2">'+STEPNAMES.map(function(n,i){
           return '<span class="s2'+(i<step(j)?" did":"")+'">'+n+'</span>';
         }).join("")+'</div>'+
@@ -1924,7 +1924,7 @@
     var sl=$("ovState"), row=$("ovBtns");
     sl.className="stateline"+(b==="done"?" ready":j.fitter?"":" block");
     $("ovStateTxt").innerHTML=b==="done"?"Complete — nothing outstanding"
-      :j.fitter?("With "+esc(j.fitter.split(" ")[0])+" · step "+step(j)+" of 5")
+      :j.fitter?("With "+esc(j.fitter.split(" ")[0])+" · step "+step(j)+" of 4")
       :"Not assigned — pick someone to do it";
     row.innerHTML=(b==="done"?''
         :'<button class="btn ghost" id="ovAssign">'+ic("USERS")+' '+

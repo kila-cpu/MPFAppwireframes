@@ -36,14 +36,22 @@ the person** — everything else belongs to the fitter.
   **Assign** / **Reassign** on any open sheet, and a banner for anything sitting
   unclaimed.
 - Opening a sheet gives a **read-only overview**: job details, who has it, and
-  the fitter's progress (step ribbon, work done, parts, checklist, signature, PO).
+  the fitter's progress (4-step ribbon, work done, parts, checklist, signature, PO).
   Nothing on it can be edited from a full access account.
 
 ### `fitter.html` — general access (Declan Byrne)
 
-Doing the work. The five step job sheet — **Start, Details, Work, Parts, End** —
-with the service checklist, parts modal, photos, signature and completion, then
-the office sign-off link that requires a PO number.
+Doing the work. **Four steps — Start, Work, Parts, End** — with the service
+checklist, parts modal, photos, signature and completion, then the office
+sign-off link that requires a PO number.
+
+There is no Details step: the machine, site, contact and job type were set by
+whoever raised the sheet, so the fitter never re-enters them. They appear instead
+as a read-only brief at the top of **Start** — machine, where, site contact and
+the fault — so the fitter can see what they are walking into.
+
+A fitter raising their own sheet gets the same short details form first (without
+the Assign to field, since it is theirs), then drops straight into Start.
 
 A general access user can still **create their own job sheet** and work it; they
 simply cannot hand sheets to anybody else, so they get no scope switcher, no
