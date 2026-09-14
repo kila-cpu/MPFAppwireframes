@@ -1,0 +1,922 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>MPF Admin &mdash; Job Sheets Backend</title>
+<style>
+  :root{
+    --red:#D3302A; --red-press:#A92420; --red-soft:#FBE9E8; --red-line:#F1C6C3; --red-text:#A92420;
+    --black:#1C1C1C; --black-2:#262626; --black-3:#111111;
+    --ink:#1C1C1C; --ink-2:#3C424B; --sub:#6B7280; --sub-2:#9AA1AB;
+    --line:#EDEFF2; --line-2:#E3E6EA; --page:#F5F6F8; --card:#FFFFFF; --field:#F3F4F6;
+    --green:#12A150; --green-soft:#E3F6EB; --green-line:#BFE7CE; --green-text:#0C7A3D;
+    --amber:#E8A00C; --amber-soft:#FDF3DC; --amber-line:#F2DDA8; --amber-text:#9A6A05;
+    --violet:#6B4BD8; --violet-soft:#EFEBFC; --violet-line:#D7CDF6; --violet-text:#4F35AE;
+    --mono:ui-monospace,"SF Mono",Menlo,monospace;
+    --ui:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font-family:var(--ui);background:var(--page);color:var(--ink);font-size:15px;line-height:1.45;
+    -webkit-font-smoothing:antialiased}
+  button,input,select,textarea{font-family:inherit}
+  [hidden]{display:none !important}
+  svg{display:block}
+
+  /* ---------- layout + sidebar ---------- */
+  .layout{display:flex;min-height:100vh}
+  .sidebar{width:256px;flex:0 0 256px;background:var(--black);color:#fff;position:fixed;
+    inset:0 auto 0 0;z-index:45;display:flex;flex-direction:column;transition:transform .2s ease}
+  .sidebar .brand{background:#fff;padding:18px 14px 14px;display:flex;flex-direction:column;
+    align-items:center;gap:6px}
+  .sidebar .brand svg{width:132px;height:auto}
+  .sidebar .brand .bsub{font-size:10.5px;color:#4A5058;font-weight:700;letter-spacing:.07em;
+    text-transform:uppercase}
+  .snav{padding:10px 0 24px;display:flex;flex-direction:column;overflow-y:auto;flex:1}
+  .snav::-webkit-scrollbar{width:6px}
+  .snav::-webkit-scrollbar-thumb{background:rgba(255,255,255,.18);border-radius:4px}
+  .item{display:flex;align-items:center;gap:13px;width:100%;padding:13px 18px;color:rgba(255,255,255,.82);
+    font-size:14.5px;font-weight:600;cursor:pointer;border:0;background:0;text-align:left;
+    letter-spacing:-.01em;border-left:3px solid transparent}
+  .item .ic{width:20px;height:20px;flex:none;opacity:.85}
+  .item .ic svg{width:20px;height:20px}
+  .item .ct{flex:1;min-width:0}
+  .item .cn{background:rgba(255,255,255,.14);border-radius:999px;font-size:11px;font-weight:800;
+    padding:2px 8px;flex:none}
+  .item:hover{background:rgba(255,255,255,.06);color:#fff}
+  .item.active{background:rgba(211,48,42,.16);color:#fff;border-left-color:var(--red)}
+  .item.active .ic{opacity:1;color:#F08079}
+  .snav .sect{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;
+    color:rgba(255,255,255,.34);padding:18px 18px 8px}
+  .sfoot{padding:14px 18px;border-top:1px solid rgba(255,255,255,.1);font-size:12px;
+    color:rgba(255,255,255,.42);display:flex;align-items:center;gap:9px}
+  .sfoot svg{width:17px;height:17px;flex:none;opacity:.7}
+  .sfoot a{color:rgba(255,255,255,.72);text-decoration:none;font-weight:600}
+  .sfoot a:hover{color:#fff;text-decoration:underline}
+
+  .main{flex:1;margin-left:256px;min-width:0;display:flex;flex-direction:column}
+  .topbar{height:64px;background:#fff;border-bottom:1px solid var(--line-2);display:flex;
+    align-items:center;gap:14px;padding:0 24px;position:sticky;top:0;z-index:30}
+  .topbar .burger{background:0;border:0;cursor:pointer;color:#4a4a4a;padding:8px;border-radius:8px;display:none}
+  .topbar .burger svg{width:22px;height:22px}
+  .topbar .crumb{font-size:13.5px;color:var(--sub);font-weight:600}
+  .topbar .crumb b{color:var(--ink);font-weight:750}
+  .topbar .spacer{flex:1}
+  .topbar .who{display:flex;align-items:center;gap:10px}
+  .topbar .who .av{width:34px;height:34px;border-radius:50%;background:var(--red);color:#fff;
+    display:flex;align-items:center;justify-content:center;font-size:12.5px;font-weight:800}
+  .topbar .who .wt b{display:block;font-size:13.5px;font-weight:750;line-height:1.2}
+  .topbar .who .wt span{display:block;font-size:11.5px;color:var(--sub)}
+  .page{padding:26px 24px 48px;max-width:1360px;width:100%}
+
+  .pagehead{display:flex;align-items:flex-start;gap:18px;flex-wrap:wrap;margin-bottom:22px}
+  .pagehead .ht{flex:1;min-width:220px}
+  .pagehead h1{margin:0;font-size:26px;font-weight:800;letter-spacing:-.03em}
+  .pagehead p{margin:5px 0 0;font-size:14px;color:var(--sub)}
+  .pagehead .acts{display:flex;gap:10px;flex-wrap:wrap}
+
+  .btn{min-height:44px;border:0;border-radius:10px;font-size:14.5px;font-weight:750;cursor:pointer;
+    padding:0 16px;display:inline-flex;align-items:center;gap:9px;letter-spacing:-.01em}
+  .btn svg{width:17px;height:17px}
+  .btn.primary{background:var(--red);color:#fff}
+  .btn.primary:hover{background:var(--red-press)}
+  .btn.ghost{background:#fff;color:var(--ink-2);border:1px solid var(--line-2)}
+  .btn.ghost:hover{background:var(--field)}
+  .btn.sm{min-height:36px;font-size:13px;padding:0 12px;border-radius:9px}
+
+  /* ---------- kpis ---------- */
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:16px;margin-bottom:22px}
+  .kpi{background:var(--card);border:1px solid var(--line-2);border-radius:13px;padding:17px 18px}
+  .kpi .lab{font-size:11px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--sub-2)}
+  .kpi .num{font-size:32px;font-weight:800;letter-spacing:-.035em;margin-top:7px;
+    font-variant-numeric:tabular-nums}
+  .kpi .num small{font-size:15px;font-weight:700;color:var(--sub-2)}
+  .kpi .sub{font-size:12.5px;color:var(--sub);margin-top:5px;font-weight:600}
+  .kpi.red{background:var(--red-soft);border-color:var(--red-line)}
+  .kpi.red .num,.kpi.red .lab{color:var(--red-text)}
+  .kpi.amber{background:var(--amber-soft);border-color:var(--amber-line)}
+  .kpi.amber .num,.kpi.amber .lab{color:var(--amber-text)}
+  .kpi.violet{background:var(--violet-soft);border-color:var(--violet-line)}
+  .kpi.violet .num,.kpi.violet .lab{color:var(--violet-text)}
+
+  /* ---------- cards + tables ---------- */
+  .card{background:var(--card);border:1px solid var(--line-2);border-radius:13px;margin-bottom:20px;
+    overflow:hidden}
+  .card > h2{margin:0;padding:16px 20px;font-size:15.5px;font-weight:800;letter-spacing:-.02em;
+    border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .card > h2 svg{width:18px;height:18px;flex:none;color:var(--sub)}
+  .card > h2 .sp{margin-left:auto;font-size:12.5px;font-weight:650;color:var(--sub)}
+  .cbody{padding:20px}
+
+  .toolbar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;padding:14px 20px;
+    border-bottom:1px solid var(--line);background:#FCFCFD}
+  .search{position:relative;flex:0 1 340px;min-width:200px}
+  .search input{width:100%;border:1px solid var(--line-2);border-radius:9px;padding:11px 13px 11px 38px;
+    font-size:14.5px;background:#fff;color:var(--ink);outline:0}
+  .search input:focus{border-color:var(--red);box-shadow:0 0 0 3px rgba(211,48,42,.12)}
+  .search .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);width:17px;height:17px;
+    color:var(--sub-2)}
+  .search .si svg{width:17px;height:17px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap}
+  .chip{border:1px solid var(--line-2);background:#fff;border-radius:999px;min-height:38px;padding:0 14px;
+    font-size:13.5px;font-weight:700;color:var(--ink-2);cursor:pointer;display:flex;align-items:center;gap:7px}
+  .chip i{font-style:normal;font-weight:800;color:var(--sub-2)}
+  .chip.on{background:var(--red);border-color:var(--red);color:#fff}
+  .chip.on i{color:rgba(255,255,255,.85)}
+
+  .tbl-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;font-size:14.5px}
+  thead th{text-align:left;font-weight:800;color:var(--ink-2);padding:14px 18px;white-space:nowrap;
+    font-size:12px;letter-spacing:.06em;text-transform:uppercase;background:#FCFCFD;
+    border-bottom:1px solid var(--line-2)}
+  tbody td{padding:15px 18px;border-top:1px solid var(--line);vertical-align:middle}
+  tbody tr.clickable{cursor:pointer}
+  tbody tr.clickable:hover{background:#FAFAFB}
+  .jno{font-family:var(--mono);font-size:13px;font-weight:700;color:var(--ink)}
+  .cell-sub{color:var(--sub-2);font-size:12.5px;margin-top:3px}
+  .strong{font-weight:750}
+  .num{font-variant-numeric:tabular-nums;font-weight:700}
+  .empty{padding:44px 20px;text-align:center;color:var(--sub-2);font-size:14px;font-weight:650}
+
+  .pill{display:inline-flex;align-items:center;font-size:11.5px;font-weight:800;border-radius:7px;
+    padding:5px 10px;white-space:nowrap;letter-spacing:.01em}
+  .pill.done{background:var(--green-soft);color:var(--green-text)}
+  .pill.draft{background:var(--field);color:var(--sub)}
+  .pill.active{background:var(--amber-soft);color:var(--amber-text)}
+  .pill.po{background:var(--violet-soft);color:var(--violet-text)}
+  .pill.unassigned{background:var(--red);color:#fff}
+  .pill.on{background:var(--green-soft);color:var(--green-text)}
+  .pill.off{background:var(--field);color:var(--sub-2)}
+  .dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:7px}
+  .dot.g{background:var(--green)} .dot.a{background:var(--amber)} .dot.r{background:var(--red)}
+  .dot.n{background:var(--sub-2)}
+
+  .who2{display:flex;align-items:center;gap:10px}
+  .who2 .av{width:32px;height:32px;border-radius:50%;background:var(--field);color:var(--sub);
+    display:flex;align-items:center;justify-content:center;font-size:11.5px;font-weight:800;flex:none}
+  .who2 .av.on{background:var(--green-soft);color:var(--green-text)}
+  .who2 b{font-weight:700;font-size:14px}
+
+  .bar{height:8px;border-radius:4px;background:var(--field);overflow:hidden;min-width:90px}
+  .bar i{display:block;height:100%;background:var(--red);border-radius:4px}
+
+  /* ---------- job sheet detail ---------- */
+  .back{display:inline-flex;align-items:center;gap:9px;background:0;border:0;cursor:pointer;
+    color:var(--sub);font-size:14px;font-weight:700;padding:0;margin-bottom:14px}
+  .back svg{width:17px;height:17px}
+  .back:hover{color:var(--ink)}
+  .split{display:grid;grid-template-columns:minmax(0,1.55fr) minmax(280px,1fr);gap:20px;align-items:start}
+  @media (max-width:1040px){.split{grid-template-columns:1fr}}
+  .drows{display:flex;flex-direction:column;margin:0}
+  .drow{display:flex;gap:16px;padding:13px 0;border-bottom:1px solid var(--line);align-items:flex-start}
+  .drow:last-child{border-bottom:0;padding-bottom:0}
+  .drow:first-child{padding-top:0}
+  .drow dt{flex:none;width:150px;font-size:11.5px;font-weight:800;letter-spacing:.05em;
+    text-transform:uppercase;color:var(--sub-2);margin:0;padding-top:2px}
+  .drow dd{flex:1;min-width:0;margin:0;font-size:14.5px;font-weight:650;line-height:1.5;
+    word-break:break-word}
+  .drow dd b{font-weight:800}
+  .drow dd .muted{color:var(--sub-2);font-weight:600}
+  .drow dd .mono{font-family:var(--mono);font-size:13.5px}
+
+  .chk{display:grid;grid-template-columns:1fr 78px 78px;font-size:14px}
+  .chk .h{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--sub-2);
+    padding:10px 0;border-bottom:1px solid var(--line-2)}
+  .chk .h:not(:first-child),.chk .c{text-align:center}
+  .chk .r{padding:11px 0;border-bottom:1px solid var(--line)}
+  .chk .mk{width:22px;height:22px;border-radius:6px;display:inline-flex;align-items:center;
+    justify-content:center;background:var(--field);color:transparent}
+  .chk .mk svg{width:13px;height:13px}
+  .chk .mk.ok{background:var(--green);color:#fff}
+  .chk .mk.no{background:var(--red);color:#fff}
+
+  .sigbox{border:1px solid var(--green-line);background:var(--green-soft);border-radius:11px;
+    padding:14px 16px;font-size:13.5px;color:var(--green-text);font-weight:650;line-height:1.6}
+  .sigbox b{display:block;font-size:15px;font-weight:850;margin-bottom:3px}
+  .pobox{border:1px solid var(--violet-line);background:var(--violet-soft);border-radius:11px;
+    padding:14px 16px;display:flex;align-items:center;gap:13px;margin-bottom:16px}
+  .pobox .pi{width:38px;height:38px;border-radius:11px;background:#fff;border:1px solid var(--violet-line);
+    display:flex;align-items:center;justify-content:center;flex:none;color:var(--violet-text)}
+  .pobox .pi svg{width:19px;height:19px}
+  .pobox em{font-style:normal;display:block;font-size:10.5px;font-weight:800;letter-spacing:.07em;
+    text-transform:uppercase;color:var(--violet-text)}
+  .pobox b{display:block;font-family:var(--mono);font-size:17px;font-weight:800;margin-top:2px}
+  .note{font-size:13.5px;color:var(--sub);line-height:1.6;background:#FCFCFD;border:1px dashed var(--line-2);
+    border-radius:11px;padding:14px 16px}
+  .photos{display:flex;gap:10px;flex-wrap:wrap}
+  .photos span{width:84px;height:70px;border-radius:10px;background:var(--field);
+    border:1px solid var(--line-2);display:flex;align-items:center;justify-content:center;font-size:24px}
+
+  /* ---------- timesheet grid ---------- */
+  .tsgrid{width:100%;border-collapse:collapse;font-size:14px}
+  .tsgrid th{text-align:center;font-size:11.5px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;
+    color:var(--sub-2);padding:12px 6px;background:#FCFCFD;border-bottom:1px solid var(--line-2)}
+  .tsgrid th:first-child{text-align:left;padding-left:18px}
+  .tsgrid td{padding:13px 6px;border-top:1px solid var(--line);text-align:center;
+    font-variant-numeric:tabular-nums;font-weight:700}
+  .tsgrid td:first-child{text-align:left;padding-left:18px;font-weight:600}
+  .tsgrid td.zero{color:var(--sub-2);font-weight:600}
+  .tsgrid td.tot{font-weight:850}
+  .tsgrid tr.sum td{border-top:2px solid var(--line-2);background:#FCFCFD;font-weight:850}
+
+  /* ---------- settings ---------- */
+  .setrow{display:flex;align-items:center;gap:14px;padding:13px 0;border-bottom:1px solid var(--line)}
+  .setrow:last-child{border-bottom:0}
+  .setrow .st{flex:1;min-width:0}
+  .setrow .st b{display:block;font-size:14.5px;font-weight:750}
+  .setrow .st span{display:block;font-size:13px;color:var(--sub);margin-top:2px}
+  .sw{width:48px;height:28px;border-radius:14px;background:var(--line-2);border:0;cursor:pointer;
+    position:relative;flex:none;transition:background .15s}
+  .sw::after{content:"";position:absolute;top:3px;left:3px;width:22px;height:22px;border-radius:50%;
+    background:#fff;transition:transform .15s;box-shadow:0 1px 3px rgba(0,0,0,.24)}
+  .sw.on{background:var(--green)}
+  .sw.on::after{transform:translateX(20px)}
+  .taglist{display:flex;gap:9px;flex-wrap:wrap}
+  .taglist span{background:var(--field);border:1px solid var(--line-2);border-radius:8px;
+    padding:7px 12px;font-size:13.5px;font-weight:700}
+
+  /* ---------- toast ---------- */
+  .toast{position:fixed;right:24px;bottom:24px;z-index:80;background:var(--black);color:#fff;
+    font-size:14px;font-weight:650;padding:14px 18px;border-radius:11px;max-width:380px;
+    box-shadow:0 16px 40px -12px rgba(0,0,0,.5);display:flex;align-items:flex-start;gap:11px;
+    opacity:0;transform:translateY(10px);pointer-events:none;transition:.2s}
+  .toast.on{opacity:1;transform:translateY(0)}
+  .toast b{font-weight:850}
+  .toast .ti{flex:none;width:18px;height:18px;color:#57D98A}
+  .toast .ti svg{width:18px;height:18px}
+
+  @media (max-width:900px){
+    .sidebar{transform:translateX(-100%)}
+    .sidebar.open{transform:none}
+    .main{margin-left:0}
+    .topbar .burger{display:flex}
+    .page{padding:20px 16px 44px}
+  }
+  .scrim{position:fixed;inset:0;background:rgba(15,20,30,.45);z-index:44;opacity:0;pointer-events:none;
+    transition:opacity .2s}
+  .scrim.on{opacity:1;pointer-events:auto}
+</style>
+</head>
+<body>
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="brand"><div id="brandMark"></div><span class="bsub">Job sheets backend</span></div>
+    <nav class="snav" id="snav"></nav>
+    <div class="sfoot">%HOME% <a href="index.html">All wireframes</a></div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <button class="burger" id="burger" aria-label="Menu">%MENU%</button>
+      <div class="crumb">MPF Admin &middot; <b id="crumb">Dashboard</b></div>
+      <div class="spacer"></div>
+      <div class="who"><span class="av">AN</span>
+        <span class="wt"><b>Aoife Nolan</b><span>Workshop admin</span></span></div>
+    </header>
+    <div class="page" id="page"></div>
+  </div>
+</div>
+
+<div class="scrim" id="scrim"></div>
+<div class="toast" id="toast"><span class="ti" id="toastIc"></span><span id="toastTxt"></span></div>
+
+<script>
+(function(){
+  "use strict";
+  var $=function(id){return document.getElementById(id);};
+  function esc(s){return (s==null?"":String(s)).replace(/[&<>"]/g,function(c){
+    return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+  function ini(n){return String(n).trim().split(/\s+/).map(function(w){return w[0];})
+    .join("").slice(0,2).toUpperCase();}
+
+  /* ============================================================
+     Icons + MPF logo
+     ============================================================ */
+  function sv(b,w){return '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="'+
+    (w||1.9)+'" stroke-linecap="round" stroke-linejoin="round">'+b+'</svg>';}
+  var FF="-apple-system,BlinkMacSystemFont,Segoe UI,system-ui,sans-serif";
+  var I={
+    GRID:sv('<rect x="3" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.6"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.6"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.6"/>'),
+    DOC:sv('<path d="M14 3H6.5A1.5 1.5 0 0 0 5 4.5v15A1.5 1.5 0 0 0 6.5 21h11a1.5 1.5 0 0 0 1.5-1.5V8l-5-5Z"/><path d="M14 3v5h5M8.5 13h7M8.5 17h4.5"/>'),
+    USERS:sv('<path d="M16 20v-1.5a4 4 0 0 0-4-4H7a4 4 0 0 0-4 4V20"/><circle cx="9.5" cy="7.5" r="3.5"/><path d="M21 20v-1.4a4 4 0 0 0-3-3.86"/><path d="M16.4 4.2a3.5 3.5 0 0 1 0 6.6"/>'),
+    CLOCK:sv('<circle cx="12" cy="12" r="9"/><path d="M12 7.2V12l3.4 2.1"/>'),
+    PLANT:sv('<path d="M3 18.5h11"/><circle cx="6" cy="18.5" r="1.9"/><circle cx="12.2" cy="18.5" r="1.9"/><path d="M4.2 14.6h10.4l-2.1-4H6.3l-2.1 4Z"/><path d="M14.8 12.4l2.5-6 3 1.4-1.8 4.6"/>',1.8),
+    PART:sv('<circle cx="12" cy="12" r="3.2"/><path d="M12 3.5v3M12 17.5v3M3.5 12h3M17.5 12h3M6 6l2.1 2.1M15.9 15.9 18 18M18 6l-2.1 2.1M8.1 15.9 6 18"/>',1.8),
+    BUILD:sv('<path d="M3 21h18"/><path d="M5 21V6.5L12 3l7 3.5V21"/><path d="M9.5 10h.01M14.5 10h.01M9.5 14h.01M14.5 14h.01M10.5 21v-3.5h3V21"/>',1.8),
+    COG:sv('<circle cx="12" cy="12" r="3.1"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1 1.56V21a2 2 0 1 1-4 0v-.09a1.7 1.7 0 0 0-1.11-1.56 1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.65 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H9a1.7 1.7 0 0 0 1-1.56V3a2 2 0 1 1 4 0v.09a1.7 1.7 0 0 0 1 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87V9a1.7 1.7 0 0 0 1.56 1H21a2 2 0 1 1 0 4h-.09a1.7 1.7 0 0 0-1.51 1Z"/>',1.7),
+    SEARCH:sv('<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'),
+    ARROW_L:sv('<path d="M15 5l-7 7 7 7"/>',2.2),
+    CHECK:sv('<path d="M20 6L9 17l-5-5"/>',3),
+    X:sv('<path d="M6 6l12 12M18 6L6 18"/>',2.4),
+    MENU:sv('<path d="M4 7h16M4 12h16M4 17h16"/>',2.2),
+    HOME:sv('<path d="M4 10.5 12 4l8 6.5V20a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1Z"/>',1.8),
+    MAIL:sv('<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',1.8),
+    DOWN:sv('<path d="M12 4v12M7 11.5 12 16.5l5-5M4.5 20h15"/>',1.9),
+    ALERT:sv('<path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 9.5v4.2M12 17v.3"/>',1.8),
+    PLUS:sv('<path d="M12 5v14M5 12h14"/>',2.3)
+  };
+  function ic(k){return I[k]||"";}
+
+  function MPF(){
+    var ink="var(--black)", red="var(--red)", chain="";
+    for(var i=0;i<8;i++){
+      var x=6+i*28.6;
+      chain+='<rect x="'+x+'" y="90" width="31" height="18" rx="9" fill="'+ink+'"/>'+
+             '<rect x="'+(x+7)+'" y="95" width="17" height="8" rx="4" fill="#fff"/>';
+    }
+    return '<svg viewBox="0 0 300 152" xmlns="http://www.w3.org/2000/svg" '+
+      'role="img" aria-label="MPF — Machine Plant Fitters Ltd.">'+
+      '<path d="M26 70 L188 10 L215 5 L197 26 L58 78 Z" fill="'+red+'"/>'+
+      '<path d="M215 5 L248 21 L265 55 L251 60 L236 30 L207 17 Z" fill="'+red+'"/>'+
+      '<path d="M251 60 L286 49 L295 74 L284 90 L253 88 Z" fill="'+red+'"/>'+
+      '<path d="M253 90 L287 90 L281 99 L257 99 Z" fill="'+red+'"/>'+
+      '<text x="0" y="80" font-family="'+FF+'" font-size="86" font-weight="900" '+
+        'letter-spacing="-3" fill="'+ink+'">MPF</text>'+chain+
+      '<text x="8" y="142" font-family="'+FF+'" font-size="16.5" font-style="italic" '+
+        'font-weight="800" letter-spacing="0.3" fill="'+ink+'">MACHINE PLANT FITTERS LTD.</text></svg>';
+  }
+
+  /* ============================================================
+     Demo data — mirrors the fitter app
+     ============================================================ */
+  var FITTERS=[
+    {n:"Stuart",         r:"Workshop · plant", on:true,  wk:[8.25,8.75,7.5,8,6.25,0,0]},
+    {n:"Csaba Varga",    r:"Workshop · plant", on:true,  wk:[8,8,8.5,7.75,8,0,0]},
+    {n:"Declan Byrne",   r:"Mobile fitter",    on:true,  wk:[9,8.5,9.25,8,7.5,4,0]},
+    {n:"Martin Kelly",   r:"Mobile fitter",    on:false, wk:[7.5,8,8,8,8,0,0]},
+    {n:"Istvan Horvath", r:"Workshop · plant", on:false, wk:[8,7.75,8,0,0,0,0]}
+  ];
+  var MACHINES=[
+    ["Sunward SWE25UF Mini Excavator","SVPH2871","Excavator","4182",  "12 Jun 2026","Due"],
+    ["CAT 320 Tracked Excavator","SVPH1140","Excavator","7614",       "02 Aug 2026","OK"],
+    ["Kubota KX027-4 Mini Digger","SVPH2604","Excavator","2290",      "18 Jul 2026","OK"],
+    ["JCB 540-140 Telehandler","SVPH0885","Telehandler","5871",       "04 Sep 2026","OK"],
+    ["Manitou MT625 Telehandler","SVPH1902","Telehandler","7761",     "02 Sep 2026","OK"],
+    ["Bomag BW120 Tandem Roller","SVPH3012","Roller","2914",          "03 Sep 2026","OK"],
+    ["Thwaites 6T Site Dumper","SVPH1755","Dumper","3402",            "21 May 2026","Overdue"],
+    ["Terex TA6S Site Dumper","SVPH2910","Dumper","1980",             "14 Aug 2026","OK"],
+    ["Atlas Copco XAS 88 Compressor","SVPH0471","Compressor","990",   "30 Jul 2026","OK"],
+    ["Genie S-60 Boom Lift","SVPH3388","Boom lift","3115",            "11 Mar 2026","Overdue"]
+  ];
+  var PARTS=[
+    ["Oil filter","OF-3406",14],["Fuel filter","FF-5052",9],["Air filter","AF-2571",7],
+    ["Hydraulic filter","HF-6177",6],["Engine oil 15W40 (20L)","EO-1540",11],
+    ["Hydraulic oil ISO 46 (20L)","HO-4620",5],["Fanbelt","FB-0912",3],
+    ["Battery 110Ah","BAT-110",2],["Grease cartridge EP2","GR-EP2",18],
+    ["Hydraulic hose 3/8\" x 1200mm","HYD-1200",4]
+  ];
+  var SITES=[
+    ["MPF workshop","Turvey yard","Workshop","—"],
+    ["SV101 Turvey, Co. Dublin","Shannon Valley Group","Onsite","Sinéad Brennan"],
+    ["SV748 Clonburris","Shannon Valley Group","Onsite","Gerry Hanley"],
+    ["SV790 Donabate","Shannon Valley Group","Onsite","Sinéad Brennan"],
+    ["SV796 Newcastle — Phase 2","Shannon Valley Group","Onsite","Gerry Hanley"],
+    ["SV814 Holybanks, Swords","Shannon Valley Group","Onsite","Sinéad Brennan"]
+  ];
+  var CHECKLIST=["Engine oil","Engine oil filter","Engine fuel filter","Engine air filter",
+    "Engine coolants","Engine fanbelts","Engine batteries","Hydraulic oils","Hydraulic filters",
+    "Hydraulic hoses","Greasing","Tracks / tyres","Lights & beacons","Safety decals",
+    "Fire extinguisher","Seat belt"];
+  var JTYPES=["Service","Repair","12 week inspection & tyres"];
+
+  /* status: draft | active | po | done  — po is "sent, waiting on the office" */
+  var SHEETS=[
+    {no:"JC-1152",mach:"Genie S-60 Boom Lift",fleet:"SVPH3388",type:"12 week inspection & tyres",
+     fitter:"",status:"draft",step:1,date:"2026-09-07",site:"MPF workshop",hours:0,
+     fault:"6 monthly LOLER thorough examination due 12 Sep — certificate needed before it goes back out.",
+     work:"",parts:[],checks:{},po:"",signer:""},
+    {no:"JC-1151",mach:"Thwaites 6T Site Dumper",fleet:"SVPH1755",type:"Repair",
+     fitter:"",status:"draft",step:1,date:"2026-09-07",site:"SV796 Newcastle — Phase 2",hours:0,
+     fault:"Tipping ram is slow and will not hold a load. Reported by the site foreman this morning.",
+     work:"",parts:[],checks:{},po:"",signer:""},
+    {no:"JC-1150",mach:"Kubota KX027-4 Mini Digger",fleet:"SVPH2604",type:"Service",
+     fitter:"Stuart",status:"draft",step:1,date:"2026-09-06",site:"SV814 Holybanks, Swords",hours:0,
+     fault:"Scheduled 250 hour service — oil, filters, greasing and track tension check.",
+     work:"",parts:[],checks:{},po:"",signer:""},
+    {no:"JC-1148",mach:"Sunward SWE25UF Mini Excavator",fleet:"SVPH2871",type:"Repair",
+     fitter:"Stuart",status:"active",step:3,date:"2026-09-07",site:"MPF workshop",hours:2.5,
+     fault:"Hydraulic hose burst on the boom ram — losing oil. Machine is off hire until repaired.",
+     work:"Boom lowered and secured, burst hose removed. New hose made up and fitted, system bled.",
+     parts:[["Hydraulic hose 3/8\" x 1200mm","HYD-1200",1]],
+     checks:{7:"checked",8:"checked",9:"failed"},po:"",signer:""},
+    {no:"JC-1147",mach:"Terex TA6S Site Dumper",fleet:"SVPH2910",type:"Repair",
+     fitter:"Csaba Varga",status:"active",step:3,date:"2026-09-05",site:"MPF workshop",hours:2.25,
+     fault:"Handbrake will not hold on a slope, cable seized.",
+     work:"Cable freed off and re-routed, adjuster replaced.",parts:[],checks:{11:"checked"},po:"",signer:""},
+    {no:"JC-1145",mach:"CAT 320 Tracked Excavator",fleet:"SVPH1140",type:"Repair",
+     fitter:"Stuart",status:"active",step:4,date:"2026-09-07",site:"SV748 Clonburris",hours:2.47,
+     fault:"Will not crank. Operator reports a single click then nothing — suspect starter motor.",
+     work:"Tested batteries — both good at 12.7V. Stripped starter, solenoid contacts burnt out.",
+     parts:[["Battery 110Ah","BAT-110",1]],checks:{6:"checked",0:"checked"},po:"",signer:""},
+    {no:"JC-1144",mach:"Atlas Copco XAS 88 Compressor",fleet:"SVPH0471",type:"Service",
+     fitter:"Declan Byrne",status:"active",step:2,date:"2026-09-05",site:"SV101 Turvey, Co. Dublin",
+     hours:1.5,fault:"Annual service and safety valve test.",work:"",parts:[],checks:{},po:"",signer:""},
+    {no:"JC-1141",mach:"JCB 540-140 Telehandler",fleet:"SVPH0885",type:"12 week inspection & tyres",
+     fitter:"Stuart",status:"po",step:5,date:"2026-09-04",site:"MPF workshop",hours:2.5,
+     fault:"Statutory 12 week thorough examination plus routine service.",
+     work:"12 week examination completed, no defects found. Service carried out — engine oil, oil filter, air filter and fuel filter replaced. Boom and carriage greased, forks and chains checked.",
+     parts:[["Engine oil 15W40 (20L)","EO-1540",1],["Oil filter","OF-3406",1],
+            ["Air filter","AF-2571",1],["Fuel filter","FF-5052",1]],
+     checks:{0:"checked",1:"checked",2:"checked",3:"checked",4:"checked",10:"checked",13:"checked"},
+     po:"",signer:"",sentTo:"Sinéad Brennan",sentAt:"6 Sep 2026, 16:40"},
+    {no:"JC-1139",mach:"Manitou MT625 Telehandler",fleet:"SVPH1902",type:"12 week inspection & tyres",
+     fitter:"Istvan Horvath",status:"done",step:5,date:"2026-09-02",site:"SV748 Clonburris",hours:1.75,
+     fault:"12 week thorough examination.",
+     work:"Examination completed, minor hydraulic weep on tilt ram noted for monitoring.",
+     parts:[],checks:{7:"checked",9:"failed",10:"checked"},po:"PO-4463-SV",signer:"Gerry Hanley",
+     sentTo:"Gerry Hanley",sentAt:"2 Sep 2026, 17:10"},
+    {no:"JC-1136",mach:"Bomag BW120 Tandem Roller",fleet:"SVPH3012",type:"Service",
+     fitter:"Stuart",status:"done",step:5,date:"2026-09-03",site:"SV790 Donabate",hours:3.25,
+     fault:"500 hour service and drum scraper adjustment.",
+     work:"Full 500 hour service completed. Drum scrapers adjusted, water system flushed and sprinkler bars cleared.",
+     parts:[["Engine oil 15W40 (20L)","EO-1540",1],["Oil filter","OF-3406",1]],
+     checks:{0:"checked",1:"checked",2:"checked",4:"checked",10:"checked"},
+     po:"PO-4471-SV",signer:"Sinéad Brennan",sentTo:"Sinéad Brennan",sentAt:"4 Sep 2026, 15:55"}
+  ];
+
+  var LBL={draft:"Draft",active:"In progress",po:"Awaiting PO",done:"Complete"};
+  function pill(st){return '<span class="pill '+(st==="done"?"done":st)+'">'+LBL[st]+'</span>';}
+  function fmtDate(iso){
+    var M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    var p=String(iso).split("-"); if(p.length!==3) return iso;
+    return (+p[2])+" "+M[+p[1]-1]+" "+p[0];
+  }
+  function fitterOn(n){
+    for(var i=0;i<FITTERS.length;i++) if(FITTERS[i].n===n) return FITTERS[i].on;
+    return false;
+  }
+
+  /* ============================================================
+     State + shell
+     ============================================================ */
+  var S={view:"dash",sheet:null,filter:"all",q:"",tsWeek:"this",
+         checklist:CHECKLIST.map(function(c){return {n:c,on:true};}),
+         jtypes:JTYPES.slice(),autoPO:true,reminders:true};
+
+  var NAV=[
+    ["dash","GRID","Dashboard"],
+    ["sheets","DOC","Job sheets"],
+    ["fitters","USERS","Fitters"],
+    ["time","CLOCK","Timesheets"],
+    ["plant","PLANT","Plant register"],
+    ["parts","PART","Parts"],
+    ["sites","BUILD","Customers & sites"],
+    ["settings","COG","Settings"]
+  ];
+  var TITLES={dash:"Dashboard",sheets:"Job sheets",fitters:"Fitters",time:"Timesheets",
+    plant:"Plant register",parts:"Parts",sites:"Customers & sites",settings:"Settings",
+    sheet:"Job sheet"};
+
+  var toastT=null;
+  function toast(msg){
+    $("toastIc").innerHTML=ic("CHECK");
+    $("toastTxt").innerHTML=msg;
+    $("toast").classList.add("on");
+    clearTimeout(toastT); toastT=setTimeout(function(){$("toast").classList.remove("on");},3200);
+  }
+
+  function renderNav(){
+    var open=SHEETS.filter(function(s){return s.status==="draft"||s.status==="active";}).length;
+    var po=SHEETS.filter(function(s){return s.status==="po";}).length;
+    var counts={sheets:open,fitters:null,time:null,plant:null,parts:null,sites:null,settings:null,dash:null};
+    $("snav").innerHTML='<div class="sect">Workshop</div>'+
+      NAV.map(function(n,i){
+        var badge=n[0]==="sheets"&&open?'<span class="cn">'+open+'</span>'
+          :(n[0]==="dash"&&po?'<span class="cn">'+po+'</span>':'');
+        return (i===4?'<div class="sect">Records</div>':'')+
+          (i===7?'<div class="sect">Configuration</div>':'')+
+          '<button class="item'+((S.view===n[0]||(S.view==="sheet"&&n[0]==="sheets"))?" active":"")+
+          '" data-v="'+n[0]+'"><span class="ic">'+ic(n[1])+'</span>'+
+          '<span class="ct">'+n[2]+'</span>'+badge+'</button>';
+      }).join("");
+    [].forEach.call($("snav").querySelectorAll(".item"),function(b){
+      b.addEventListener("click",function(){ go(b.dataset.v); });
+    });
+  }
+  function go(v){
+    S.view=v;
+    if(v!=="sheet") S.sheet=null;
+    $("crumb").textContent=TITLES[v]+(v==="sheet"&&S.sheet?(" · "+S.sheet):"");
+    $("sidebar").classList.remove("open"); $("scrim").classList.remove("on");
+    renderNav(); render();
+    window.scrollTo(0,0);
+  }
+  $("burger").addEventListener("click",function(){
+    $("sidebar").classList.toggle("open"); $("scrim").classList.toggle("on");
+  });
+  $("scrim").addEventListener("click",function(){
+    $("sidebar").classList.remove("open"); $("scrim").classList.remove("on");
+  });
+
+  /* ============================================================
+     Sections
+     ============================================================ */
+  function render(){
+    var f={dash:vDash,sheets:vSheets,sheet:vSheet,fitters:vFitters,time:vTime,
+           plant:vPlant,parts:vParts,sites:vSites,settings:vSettings}[S.view];
+    $("page").innerHTML=f();
+    bind();
+  }
+
+  function head(title,sub,acts){
+    return '<div class="pagehead"><div class="ht"><h1>'+title+'</h1>'+
+      (sub?'<p>'+sub+'</p>':'')+'</div>'+(acts?'<div class="acts">'+acts+'</div>':'')+'</div>';
+  }
+
+  /* ---------- 1 · Dashboard ---------- */
+  function vDash(){
+    var open=SHEETS.filter(function(s){return s.status==="draft"||s.status==="active";});
+    var po=SHEETS.filter(function(s){return s.status==="po";});
+    var unassigned=SHEETS.filter(function(s){return !s.fitter;});
+    var onClock=FITTERS.filter(function(f){return f.on;});
+    var hours=FITTERS.reduce(function(a,f){return a+f.wk.reduce(function(x,y){return x+y;},0);},0);
+    var recent=SHEETS.slice(0,6);
+
+    return head("Dashboard","Monday 7 September 2026 · week 37")+
+      '<div class="kpis">'+
+        '<div class="kpi'+(unassigned.length?" red":"")+'"><div class="lab">Unassigned</div>'+
+          '<div class="num">'+unassigned.length+'</div>'+
+          '<div class="sub">job sheets with no fitter</div></div>'+
+        '<div class="kpi"><div class="lab">Open sheets</div><div class="num">'+open.length+
+          ' <small>/ '+SHEETS.length+'</small></div><div class="sub">draft or in progress</div></div>'+
+        '<div class="kpi'+(po.length?" violet":"")+'"><div class="lab">Awaiting PO</div>'+
+          '<div class="num">'+po.length+'</div><div class="sub">with the office for sign-off</div></div>'+
+        '<div class="kpi"><div class="lab">On the clock</div><div class="num">'+onClock.length+
+          ' <small>/ '+FITTERS.length+'</small></div><div class="sub">fitters clocked in now</div></div>'+
+        '<div class="kpi"><div class="lab">Hours this week</div><div class="num">'+hours.toFixed(2)+
+          '</div><div class="sub">across all fitters</div></div>'+
+      '</div>'+
+
+      (unassigned.length?'<div class="card"><h2>'+ic("ALERT")+' Needs attention'+
+        '<span class="sp">'+unassigned.length+' unassigned</span></h2><div class="tbl-wrap"><table>'+
+        '<thead><tr><th>Job sheet</th><th>Machine</th><th>Job type</th><th>Raised</th><th></th></tr></thead>'+
+        '<tbody>'+unassigned.map(function(s){
+          return '<tr class="clickable" data-open="'+s.no+'"><td><span class="jno">#'+esc(s.no)+'</span></td>'+
+            '<td><div class="strong">'+esc(s.mach)+'</div><div class="cell-sub">'+esc(s.fleet)+'</div></td>'+
+            '<td>'+esc(s.type)+'</td><td>'+fmtDate(s.date)+'</td>'+
+            '<td style="text-align:right"><button class="btn primary sm" data-assign="'+s.no+
+            '">Assign fitter</button></td></tr>';
+        }).join("")+'</tbody></table></div></div>':'')+
+
+      (po.length?'<div class="card"><h2>'+ic("MAIL")+' Waiting on the office</h2>'+
+        '<div class="tbl-wrap"><table><thead><tr><th>Job sheet</th><th>Machine</th><th>Sent to</th>'+
+        '<th>Sent</th><th></th></tr></thead><tbody>'+po.map(function(s){
+          return '<tr class="clickable" data-open="'+s.no+'"><td><span class="jno">#'+esc(s.no)+'</span></td>'+
+            '<td>'+esc(s.mach)+'</td><td>'+esc(s.sentTo||"—")+'</td><td>'+esc(s.sentAt||"—")+'</td>'+
+            '<td style="text-align:right"><button class="btn ghost sm" data-chase="'+s.no+
+            '">Chase PO</button></td></tr>';
+        }).join("")+'</tbody></table></div></div>':'')+
+
+      '<div class="card"><h2>Recent job sheets<span class="sp">newest first</span></h2>'+
+      '<div class="tbl-wrap"><table><thead><tr><th>Job sheet</th><th>Machine</th><th>Fitter</th>'+
+      '<th>Status</th><th>Progress</th><th>Hours</th></tr></thead><tbody>'+
+      recent.map(rowSheet).join("")+'</tbody></table></div></div>';
+  }
+
+  function rowSheet(s){
+    return '<tr class="clickable" data-open="'+s.no+'">'+
+      '<td><span class="jno">#'+esc(s.no)+'</span><div class="cell-sub">'+fmtDate(s.date)+'</div></td>'+
+      '<td><div class="strong">'+esc(s.mach)+'</div><div class="cell-sub">'+esc(s.fleet)+' · '+
+        esc(s.type)+'</div></td>'+
+      '<td>'+(s.fitter?'<div class="who2"><span class="av'+(fitterOn(s.fitter)?" on":"")+'">'+
+        ini(s.fitter)+'</span><b>'+esc(s.fitter)+'</b></div>'
+        :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
+      '<td>'+pill(s.status)+'</td>'+
+      '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
+        (s.step/5*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/5</span></div></td>'+
+      '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td></tr>';
+  }
+
+  /* ---------- 2 · Job sheets ---------- */
+  var FILTERS=[["all","All"],["draft","Draft"],["active","In progress"],["po","Awaiting PO"],["done","Complete"]];
+  function vSheets(){
+    var rows=SHEETS.filter(function(s){
+      if(S.filter!=="all"&&s.status!==S.filter) return false;
+      if(!S.q) return true;
+      var hay=(s.no+" "+s.mach+" "+s.fleet+" "+s.type+" "+(s.fitter||"")+" "+s.site).toLowerCase();
+      return hay.indexOf(S.q.toLowerCase())>=0;
+    });
+    return head("Job sheets","Every sheet raised by the workshop, live as the fitters fill them in",
+      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>'+
+      '<button class="btn primary" id="newSheet">'+ic("PLUS")+' New job sheet</button>')+
+      '<div class="card"><div class="toolbar">'+
+        '<div class="search"><span class="si">'+ic("SEARCH")+'</span>'+
+        '<input id="q" placeholder="Search job no, machine, fleet no, fitter or site…" value="'+
+        esc(S.q)+'"></div><div class="chips">'+
+        FILTERS.map(function(f){
+          var n=f[0]==="all"?SHEETS.length:SHEETS.filter(function(s){return s.status===f[0];}).length;
+          return '<button class="chip'+(S.filter===f[0]?" on":"")+'" data-f="'+f[0]+'">'+f[1]+
+            ' <i>'+n+'</i></button>';
+        }).join("")+'</div></div>'+
+        (rows.length?'<div class="tbl-wrap"><table><thead><tr><th>Job sheet</th><th>Machine</th>'+
+        '<th>Site</th><th>Fitter</th><th>Status</th><th>Progress</th><th>Hours</th><th>PO</th></tr></thead>'+
+        '<tbody>'+rows.map(function(s){
+          return '<tr class="clickable" data-open="'+s.no+'">'+
+            '<td><span class="jno">#'+esc(s.no)+'</span><div class="cell-sub">'+fmtDate(s.date)+'</div></td>'+
+            '<td><div class="strong">'+esc(s.mach)+'</div><div class="cell-sub">'+esc(s.fleet)+' · '+
+              esc(s.type)+'</div></td>'+
+            '<td>'+esc(s.site)+'</td>'+
+            '<td>'+(s.fitter?'<div class="who2"><span class="av'+(fitterOn(s.fitter)?" on":"")+'">'+
+              ini(s.fitter)+'</span><b>'+esc(s.fitter)+'</b></div>'
+              :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
+            '<td>'+pill(s.status)+'</td>'+
+            '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
+              (s.step/5*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/5</span></div></td>'+
+            '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td>'+
+            '<td>'+(s.po?'<span class="mono strong">'+esc(s.po)+'</span>'
+              :'<span class="cell-sub" style="margin:0">—</span>')+'</td></tr>';
+        }).join("")+'</tbody></table></div>'
+        :'<div class="empty">No job sheets match that search.</div>')+'</div>';
+  }
+
+  /* ---------- job sheet detail ---------- */
+  function vSheet(){
+    var s=SHEETS.filter(function(x){return x.no===S.sheet;})[0];
+    if(!s) return head("Job sheet not found","");
+    var checks=Object.keys(s.checks||{});
+    return '<button class="back" id="back">'+ic("ARROW_L")+' All job sheets</button>'+
+      head("#"+esc(s.no)+" — "+esc(s.mach),
+        esc(s.type)+" · "+esc(s.site)+" · raised "+fmtDate(s.date),
+        (s.status==="po"?'<button class="btn ghost" data-chase="'+s.no+'">'+ic("MAIL")+' Chase PO</button>':'')+
+        (s.status==="done"?'':'<button class="btn ghost" data-assign="'+s.no+'">'+
+          (s.fitter?"Reassign":"Assign fitter")+'</button>')+
+        '<button class="btn primary" id="expPdf">'+ic("DOWN")+' Export PDF</button>')+
+      '<div class="split"><div>'+
+        '<div class="card"><h2>Job sheet'+pillSp(s)+'</h2><div class="cbody"><dl class="drows">'+
+          drow("Machine",esc(s.mach)+'<br><span class="mono muted">'+esc(s.fleet)+'</span>')+
+          drow("Job type",esc(s.type))+
+          drow("Site",esc(s.site))+
+          drow("Fitter",s.fitter?esc(s.fitter):'<span class="muted">Not assigned</span>')+
+          drow("Labour",s.hours?('<b>'+s.hours.toFixed(2)+' h</b>'):'<span class="muted">None booked</span>')+
+          drow("Fault reported",esc(s.fault))+
+          drow("Work carried out",s.work?esc(s.work):'<span class="muted">Not filled in yet</span>')+
+        '</dl></div></div>'+
+
+        '<div class="card"><h2>Service checklist<span class="sp">'+checks.length+' of '+
+          CHECKLIST.length+' marked</span></h2><div class="cbody">'+
+          (checks.length?'<div class="chk"><div class="h">Service detail</div><div class="h">Checked</div>'+
+            '<div class="h">Failed</div>'+
+            CHECKLIST.map(function(c,n){
+              var v=s.checks[n];
+              if(!v) return "";
+              return '<div class="r">'+esc(c)+'</div>'+
+                '<div class="r c"><span class="mk'+(v==="checked"?" ok":"")+'">'+ic("CHECK")+'</span></div>'+
+                '<div class="r c"><span class="mk'+(v==="failed"?" no":"")+'">'+ic("X")+'</span></div>';
+            }).join("")+'</div>'
+          :'<div class="note">Nothing marked on the checklist yet.</div>')+
+        '</div></div>'+
+
+        '<div class="card"><h2>Parts used<span class="sp">'+s.parts.length+'</span></h2><div class="cbody">'+
+          (s.parts.length?'<dl class="drows">'+s.parts.map(function(p){
+            return drow(esc(p[0]),'<span class="mono">'+esc(p[1])+'</span> &times; <b>'+p[2]+'</b>');
+          }).join("")+'</dl>':'<div class="note">No parts booked to this sheet.</div>')+
+        '</div></div>'+
+      '</div><div>'+
+        '<div class="card"><h2>Sign-off</h2><div class="cbody">'+
+          (s.po?'<div class="pobox"><span class="pi">'+ic("DOC")+'</span><span><em>PO number</em>'+
+            '<b>'+esc(s.po)+'</b></span></div>'+
+            '<div class="sigbox"><b>'+esc(s.signer)+'</b>Signed off from the job sheet link'+
+            (s.sentAt?'<br>Sent '+esc(s.sentAt):'')+'</div>'
+          :s.status==="po"?'<div class="note" style="margin-bottom:14px">Sent to <b>'+esc(s.sentTo)+
+            '</b> on '+esc(s.sentAt)+'. No PO number back yet.</div>'+
+            '<button class="btn primary" style="width:100%" data-chase="'+s.no+'">'+ic("MAIL")+
+            ' Chase the office</button>'
+          :'<div class="note">The fitter sends this to the office once the sheet is complete. '+
+            'The office cannot sign without giving a PO number.</div>')+
+        '</div></div>'+
+        '<div class="card"><h2>Progress</h2><div class="cbody"><dl class="drows">'+
+          drow("Status",pill(s.status))+
+          drow("Step",'<b>'+s.step+' of 5</b>')+
+          drow("Raised",fmtDate(s.date))+
+          drow("Photos",'<div class="photos"><span>📷</span><span>📷</span></div>')+
+        '</dl></div></div>'+
+      '</div></div>';
+  }
+  function pillSp(s){return '<span class="sp">'+pill(s.status)+'</span>';}
+  function drow(k,v){return '<div class="drow"><dt>'+k+'</dt><dd>'+v+'</dd></div>';}
+
+  /* ---------- 3 · Fitters ---------- */
+  function vFitters(){
+    return head("Fitters","Who is on the clock, what they are working on, and how loaded they are",
+      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>')+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Fitter</th><th>Role</th>'+
+      '<th>Clock</th><th>Open sheets</th><th>Working on</th><th>Hours this week</th></tr></thead><tbody>'+
+      FITTERS.map(function(f){
+        var open=SHEETS.filter(function(s){return s.fitter===f.n&&
+          (s.status==="draft"||s.status==="active");});
+        var run=SHEETS.filter(function(s){return s.fitter===f.n&&s.status==="active";})[0];
+        var h=f.wk.reduce(function(a,b){return a+b;},0);
+        return '<tr><td><div class="who2"><span class="av'+(f.on?" on":"")+'">'+ini(f.n)+
+            '</span><b>'+esc(f.n)+'</b></div></td>'+
+          '<td>'+esc(f.r)+'</td>'+
+          '<td><span class="pill '+(f.on?"on":"off")+'"><span class="dot '+(f.on?"g":"n")+
+            '"></span>'+(f.on?"On the clock":"Off")+'</span></td>'+
+          '<td class="num">'+open.length+'</td>'+
+          '<td>'+(run?'<span class="jno">#'+esc(run.no)+'</span> <span class="cell-sub" '+
+            'style="margin:0">'+esc(run.mach)+'</span>':'<span class="cell-sub" style="margin:0">—</span>')+'</td>'+
+          '<td class="num">'+h.toFixed(2)+' h</td></tr>';
+      }).join("")+'</tbody></table></div></div>';
+  }
+
+  /* ---------- 4 · Timesheets ---------- */
+  var DAYS=["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
+  function vTime(){
+    var totals=DAYS.map(function(_,i){
+      return FITTERS.reduce(function(a,f){return a+f.wk[i];},0);});
+    var grand=totals.reduce(function(a,b){return a+b;},0);
+    return head("Timesheets","Week 37 · Mon 31 Aug – Sun 6 Sep 2026",
+      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export to payroll</button>'+
+      '<button class="btn primary" id="approveAll">'+ic("CHECK")+' Approve week</button>')+
+      '<div class="kpis"><div class="kpi"><div class="lab">Total hours</div><div class="num">'+
+        grand.toFixed(2)+'</div><div class="sub">all fitters, week 37</div></div>'+
+        '<div class="kpi"><div class="lab">Booked to sheets</div><div class="num">'+
+        SHEETS.reduce(function(a,s){return a+s.hours;},0).toFixed(2)+'</div>'+
+        '<div class="sub">labour on job sheets</div></div>'+
+        '<div class="kpi amber"><div class="lab">Unbooked</div><div class="num">'+
+        (grand-SHEETS.reduce(function(a,s){return a+s.hours;},0)).toFixed(2)+'</div>'+
+        '<div class="sub">shift time not on a sheet</div></div></div>'+
+      '<div class="card"><h2>Hours by fitter<span class="sp">from clock in / clock out</span></h2>'+
+      '<div class="tbl-wrap"><table class="tsgrid"><thead><tr><th>Fitter</th>'+
+      DAYS.map(function(d){return '<th>'+d+'</th>';}).join("")+'<th>Total</th><th>Approve</th></tr></thead>'+
+      '<tbody>'+FITTERS.map(function(f,i){
+        var h=f.wk.reduce(function(a,b){return a+b;},0);
+        return '<tr><td>'+esc(f.n)+'</td>'+
+          f.wk.map(function(v){return '<td'+(v?'':' class="zero"')+'>'+(v?v.toFixed(2):"—")+'</td>';}).join("")+
+          '<td class="tot">'+h.toFixed(2)+'</td>'+
+          '<td><button class="btn ghost sm" data-appr="'+i+'">Approve</button></td></tr>';
+      }).join("")+
+      '<tr class="sum"><td>All fitters</td>'+totals.map(function(v){
+        return '<td>'+v.toFixed(2)+'</td>';}).join("")+'<td class="tot">'+grand.toFixed(2)+
+      '</td><td></td></tr>'+
+      '</tbody></table></div></div>';
+  }
+
+  /* ---------- 5 · Plant register ---------- */
+  function vPlant(){
+    return head("Plant register","Every machine MPF services, with its last service and what is due",
+      '<button class="btn primary" id="addMach">'+ic("PLUS")+' Add machine</button>')+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Machine</th><th>Fleet no</th>'+
+      '<th>Type</th><th>Hour meter</th><th>Last service</th><th>Status</th><th>Sheets</th></tr></thead>'+
+      '<tbody>'+MACHINES.map(function(m){
+        var n=SHEETS.filter(function(s){return s.fleet===m[1];}).length;
+        var st=m[5]==="OK"?'<span class="pill done"><span class="dot g"></span>Up to date</span>'
+          :m[5]==="Due"?'<span class="pill active"><span class="dot a"></span>Service due</span>'
+          :'<span class="pill unassigned">Overdue</span>';
+        return '<tr><td class="strong">'+esc(m[0])+'</td>'+
+          '<td><span class="mono">'+esc(m[1])+'</span></td><td>'+esc(m[2])+'</td>'+
+          '<td class="num">'+esc(m[3])+' h</td><td>'+esc(m[4])+'</td><td>'+st+'</td>'+
+          '<td class="num">'+n+'</td></tr>';
+      }).join("")+'</tbody></table></div></div>';
+  }
+
+  /* ---------- 6 · Parts ---------- */
+  function vParts(){
+    var used={};
+    SHEETS.forEach(function(s){ s.parts.forEach(function(p){ used[p[1]]=(used[p[1]]||0)+p[2]; }); });
+    return head("Parts","The catalogue the fitters pick from, and what has gone onto job sheets",
+      '<button class="btn primary" id="addPart">'+ic("PLUS")+' Add part</button>')+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Part</th><th>Part number</th>'+
+      '<th>In stock</th><th>Used on sheets</th><th>Status</th></tr></thead><tbody>'+
+      PARTS.map(function(p){
+        var u=used[p[1]]||0;
+        var low=p[2]<=3;
+        return '<tr><td class="strong">'+esc(p[0])+'</td>'+
+          '<td><span class="mono">'+esc(p[1])+'</span></td>'+
+          '<td class="num">'+p[2]+'</td><td class="num">'+u+'</td>'+
+          '<td>'+(low?'<span class="pill active"><span class="dot a"></span>Low stock</span>'
+            :'<span class="pill done"><span class="dot g"></span>OK</span>')+'</td></tr>';
+      }).join("")+'</tbody></table></div></div>';
+  }
+
+  /* ---------- 7 · Customers & sites ---------- */
+  function vSites(){
+    return head("Customers & sites","Where the machines are, and who signs the job sheets off",
+      '<button class="btn primary" id="addSite">'+ic("PLUS")+' Add site</button>')+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Site</th><th>Customer</th>'+
+      '<th>Type</th><th>Signs off</th><th>Job sheets</th><th>POs received</th></tr></thead><tbody>'+
+      SITES.map(function(t){
+        var rows=SHEETS.filter(function(s){return s.site===t[0];});
+        var pos=rows.filter(function(s){return s.po;}).length;
+        return '<tr><td class="strong">'+esc(t[0])+'</td><td>'+esc(t[1])+'</td>'+
+          '<td>'+esc(t[2])+'</td><td>'+esc(t[3])+'</td>'+
+          '<td class="num">'+rows.length+'</td><td class="num">'+pos+'</td></tr>';
+      }).join("")+'</tbody></table></div></div>';
+  }
+
+  /* ---------- 8 · Settings ---------- */
+  function vSettings(){
+    return head("Settings","The templates and rules behind the fitter app")+
+      '<div class="split"><div>'+
+      '<div class="card"><h2>Service checklist template<span class="sp">'+
+        S.checklist.filter(function(c){return c.on;}).length+' of '+S.checklist.length+
+        ' in use</span></h2><div class="cbody">'+
+        '<div class="note" style="margin-bottom:16px">These are the rows a fitter sees on the '+
+        '<b>Work</b> step, each marked checked or failed. Turning one off hides it on new sheets.</div>'+
+        S.checklist.map(function(c,i){
+          return '<div class="setrow"><div class="st"><b>'+esc(c.n)+'</b></div>'+
+            '<button class="sw'+(c.on?" on":"")+'" data-ck="'+i+'" aria-label="Toggle '+esc(c.n)+
+            '"></button></div>';
+        }).join("")+'</div></div>'+
+      '</div><div>'+
+      '<div class="card"><h2>Job types</h2><div class="cbody">'+
+        '<div class="taglist">'+S.jtypes.map(function(t){return '<span>'+esc(t)+'</span>';}).join("")+
+        '</div><div class="note" style="margin-top:14px">Shown as the radio list on the '+
+        '<b>Details</b> step.</div></div></div>'+
+      '<div class="card"><h2>Office sign-off</h2><div class="cbody">'+
+        '<div class="setrow"><div class="st"><b>PO number required</b>'+
+          '<span>The office cannot sign a job sheet without entering one.</span></div>'+
+          '<button class="sw'+(S.autoPO?" on":"")+'" data-sw="autoPO"></button></div>'+
+        '<div class="setrow"><div class="st"><b>Chase reminders</b>'+
+          '<span>Email the office again if no PO comes back within 48 hours.</span></div>'+
+          '<button class="sw'+(S.reminders?" on":"")+'" data-sw="reminders"></button></div>'+
+      '</div></div>'+
+      '<div class="card"><h2>Office contacts</h2><div class="cbody"><dl class="drows">'+
+        drow("Accounts","Sinéad Brennan<br><span class=\"muted\">sinead.brennan@mpfitters.ie</span>")+
+        drow("Contracts","Gerry Hanley<br><span class=\"muted\">g.hanley@mpfitters.ie</span>")+
+        drow("Shared inbox","<span class=\"muted\">purchasing@mpfitters.ie</span>")+
+      '</dl></div></div>'+
+      '</div></div>';
+  }
+
+  /* ============================================================
+     Wiring
+     ============================================================ */
+  function bind(){
+    var el;
+    [].forEach.call(document.querySelectorAll("#page [data-open]"),function(r){
+      r.addEventListener("click",function(e){
+        if(e.target.closest("button")) return;   // row buttons act on their own
+        S.sheet=r.dataset.open; go("sheet");
+      });
+    });
+    [].forEach.call(document.querySelectorAll("#page [data-assign]"),function(b){
+      b.addEventListener("click",function(e){
+        e.stopPropagation();
+        var s=SHEETS.filter(function(x){return x.no===b.dataset.assign;})[0];
+        var free=FITTERS.filter(function(f){return f.n!==s.fitter;});
+        var pick=free[0];
+        s.fitter=pick.n;
+        if(s.status==="draft") s.status="draft";
+        render(); renderNav();
+        toast("<b>#"+esc(s.no)+"</b> assigned to <b>"+esc(pick.n)+"</b>");
+      });
+    });
+    [].forEach.call(document.querySelectorAll("#page [data-chase]"),function(b){
+      b.addEventListener("click",function(e){
+        e.stopPropagation();
+        var s=SHEETS.filter(function(x){return x.no===b.dataset.chase;})[0];
+        toast("Reminder sent to <b>"+esc(s.sentTo)+"</b> for the PO on #"+esc(s.no));
+      });
+    });
+    [].forEach.call(document.querySelectorAll("#page [data-f]"),function(b){
+      b.addEventListener("click",function(){ S.filter=b.dataset.f; render(); });
+    });
+    if((el=$("q"))) el.addEventListener("input",function(){
+      S.q=this.value;
+      var pos=this.selectionStart;
+      render();
+      var n=$("q"); if(n){ n.focus(); n.setSelectionRange(pos,pos); }
+    });
+    if((el=$("back"))) el.addEventListener("click",function(){ go("sheets"); });
+    [].forEach.call(document.querySelectorAll("#page [data-appr]"),function(b){
+      b.addEventListener("click",function(){
+        var f=FITTERS[+b.dataset.appr];
+        b.outerHTML='<span class="pill done">'+"Approved"+'</span>';
+        toast("<b>"+esc(f.n)+"</b>&rsquo;s week approved");
+      });
+    });
+    if((el=$("approveAll"))) el.addEventListener("click",function(){
+      toast("Week 37 approved for all "+FITTERS.length+" fitters");
+    });
+    [].forEach.call(document.querySelectorAll("#page [data-ck]"),function(b){
+      b.addEventListener("click",function(){
+        var c=S.checklist[+b.dataset.ck];
+        c.on=!c.on; render();
+        toast('<b>'+esc(c.n)+'</b> '+(c.on?"added to":"removed from")+" the checklist template");
+      });
+    });
+    [].forEach.call(document.querySelectorAll("#page [data-sw]"),function(b){
+      b.addEventListener("click",function(){
+        S[b.dataset.sw]=!S[b.dataset.sw]; render();
+        toast("Setting updated");
+      });
+    });
+    ["expCsv","expPdf","newSheet","addMach","addPart","addSite"].forEach(function(id){
+      var n=$(id);
+      if(n) n.addEventListener("click",function(){
+        toast("<b>"+n.textContent.trim()+"</b> — not wired up in this wireframe");
+      });
+    });
+  }
+
+  /* ---------- boot ---------- */
+  $("brandMark").innerHTML=MPF();
+  document.querySelector(".sfoot").innerHTML=
+    ic("HOME")+' <a href="index.html">All wireframes</a>';
+  $("burger").innerHTML=ic("MENU");
+  renderNav(); go("dash");
+})();
+</script>
+</body>
+</html>

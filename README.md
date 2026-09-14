@@ -1,7 +1,21 @@
-# MPF — Plant job sheets + clock in/out — mobile prototype
+# MPF — App wireframes
 
-Standalone wireframe. Open `index.html` in a browser — no build, no dependencies,
-single file.
+Interactive wireframes for **Machine Plant Fitters Ltd.** — the fitter's phone app
+and the workshop's admin backend. No build, no dependencies; each page is a single
+self-contained HTML file.
+
+| File | What it is |
+| --- | --- |
+| `index.html` | Portal landing page — pick a wireframe |
+| `mobile.html` | Fitter mobile app (5 step job sheet + clock in/out) |
+| `admin.html` | MPF admin backend (8 sections) |
+| `server.js` | Zero-dependency static server for Railway |
+
+Every page links back to the portal, so the whole set click-throughs as one.
+
+---
+
+## 1 · Fitter mobile app — `mobile.html`
 
 Built to the **Plant job sheet** wireframes: a five step job sheet
 (Start → Details → Work → Parts → End) reached from a job sheets list, plus the
@@ -88,3 +102,41 @@ not in this build.
   basis that they belong to the customers whose machines MPF services.
 - All bars, sheets, the Add Part modal and the office page are positioned inside
   the phone frame (absolute, not fixed), so nothing escapes the mockup.
+
+
+---
+
+## 2 · MPF admin backend — `admin.html`
+
+Desktop back office, following the same pattern as the other admin demos: fixed
+black sidebar with the MPF mark, sticky topbar, light content area with KPI tiles
+and tables. Eight sections:
+
+1. **Dashboard** — unassigned / open / awaiting-PO / on-the-clock / hours KPIs, a
+   *Needs attention* table for sheets with no fitter, a *Waiting on the office*
+   table, and recent sheets with a progress bar for the 5 steps.
+2. **Job sheets** — every sheet, searchable across job no, machine, fleet no,
+   fitter and site, filtered All / Draft / In progress / Awaiting PO / Complete.
+   Rows open the sheet.
+3. **Job sheet detail** — read-only copy of what the fitter filled in: machine,
+   fault, work carried out, labour, the marked checklist rows (checked in green,
+   failed in red), parts, photos, and the sign-off panel with the PO number.
+4. **Fitters** — who is on the clock, open sheets each, what they are on now, and
+   hours this week.
+5. **Timesheets** — week grid of hours per fitter per day from the clock, with
+   booked vs unbooked totals and per-fitter approval.
+6. **Plant register** — every machine with fleet no, hour meter, last service and
+   whether a service is due or overdue.
+7. **Customers & sites** — sites, who signs off, sheets raised and POs received.
+8. **Settings** — the service checklist template (toggle rows on and off), job
+   types, the PO-required rule and chase reminders, and office contacts.
+
+Interactive throughout: navigation, search, filters, assigning an unassigned
+sheet, chasing a PO, approving a timesheet week, and toggling checklist rows all
+work. Buttons that would leave the wireframe (export CSV/PDF, add machine/part/
+site) say so when clicked rather than pretending.
+
+## Deploying
+
+Railway serves the folder with `server.js` (`npm start`). `index.html` is the
+portal, so the deployed root lands on the wireframe picker.
