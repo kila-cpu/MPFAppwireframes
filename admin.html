@@ -353,17 +353,29 @@
     {n:"Martin Kelly",   access:"general", on:false, wk:[7.5,8,8,8,8,0,0]},
     {n:"Istvan Horvath", access:"general", on:false, wk:[8,7.75,8,0,0,0,0]}
   ];
+  /* MPF services customers' machines, so this is a history of everything they
+     have worked on — identified by the machine's own serial, not a fleet number. */
   var MACHINES=[
-    ["Sunward SWE25UF Mini Excavator","SVPH2871","Excavator","4182",  "12 Jun 2026","Due"],
-    ["CAT 320 Tracked Excavator","SVPH1140","Excavator","7614",       "02 Aug 2026","OK"],
-    ["Kubota KX027-4 Mini Digger","SVPH2604","Excavator","2290",      "18 Jul 2026","OK"],
-    ["JCB 540-140 Telehandler","SVPH0885","Telehandler","5871",       "04 Sep 2026","OK"],
-    ["Manitou MT625 Telehandler","SVPH1902","Telehandler","7761",     "02 Sep 2026","OK"],
-    ["Bomag BW120 Tandem Roller","SVPH3012","Roller","2914",          "03 Sep 2026","OK"],
-    ["Thwaites 6T Site Dumper","SVPH1755","Dumper","3402",            "21 May 2026","Overdue"],
-    ["Terex TA6S Site Dumper","SVPH2910","Dumper","1980",             "14 Aug 2026","OK"],
-    ["Atlas Copco XAS 88 Compressor","SVPH0471","Compressor","990",   "30 Jul 2026","OK"],
-    ["Genie S-60 Boom Lift","SVPH3388","Boom lift","3115",            "11 Mar 2026","Overdue"]
+    ["Sunward SWE25UF Mini Excavator","SWE25-2419A0771","Excavator",
+      "Turvey Plant Hire","4182","07 Sep 2026"],
+    ["CAT 320 Tracked Excavator","CAT0320LKGG02184","Excavator",
+      "Shannon Valley Group","7614","07 Sep 2026"],
+    ["Kubota KX027-4 Mini Digger","KX0274-88231","Excavator",
+      "Shannon Valley Group","2290","06 Sep 2026"],
+    ["JCB 540-140 Telehandler","JCB5AAAGL02771456","Telehandler",
+      "Donabate Plant Hire","5871","04 Sep 2026"],
+    ["Manitou MT625 Telehandler","MT625-749812","Telehandler",
+      "Shannon Valley Group","7761","02 Sep 2026"],
+    ["Bomag BW120 Tandem Roller","BW120AD-101620991","Roller",
+      "Shannon Valley Group","2914","03 Sep 2026"],
+    ["Thwaites 6T Site Dumper","TH6T-SD30219","Dumper",
+      "Shannon Valley Group","3402","07 Sep 2026"],
+    ["Terex TA6S Site Dumper","TA6S-EGU1188","Dumper",
+      "Newcastle Developments","1980","05 Sep 2026"],
+    ["Atlas Copco XAS 88 Compressor","XAS88-APP642119","Compressor",
+      "Shannon Valley Group","990","05 Sep 2026"],
+    ["Genie S-60 Boom Lift","S60X-17442","Boom lift",
+      "Kilcock Groundworks","3115","07 Sep 2026"]
   ];
   var PARTS=[
     ["Oil filter","OF-3406",14],["Fuel filter","FF-5052",9],["Air filter","AF-2571",7],
@@ -771,18 +783,22 @@
 
   /* ---------- 5 · Plant register ---------- */
   function vPlant(){
-    return head("Plant register","Every machine MPF services, with its last service and what is due",
+    return head("Plant register",
+      "Every customer machine MPF has worked on, and when it was last seen",
+      '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>'+
       '<button class="btn primary" id="addMach">'+ic("PLUS")+' Add machine</button>')+
-      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Machine</th><th>Fleet no</th>'+
-      '<th>Type</th><th>Hour meter</th><th>Last service</th><th>Status</th><th>Sheets</th></tr></thead>'+
-      '<tbody>'+MACHINES.map(function(m){
-        var n=SHEETS.filter(function(s){return s.fleet===m[1];}).length;
-        var st=m[5]==="OK"?'<span class="pill done"><span class="dot g"></span>Up to date</span>'
-          :m[5]==="Due"?'<span class="pill active"><span class="dot a"></span>Service due</span>'
-          :'<span class="pill unassigned">Overdue</span>';
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Machine</th>'+
+      '<th>Serial number</th><th>Type</th><th>Customer</th><th>Hour meter</th>'+
+      '<th>Last worked on</th><th>Job sheets</th></tr></thead><tbody>'+
+      MACHINES.map(function(m){
+        /* sheets are matched on the machine, since the serial is the customer's */
+        var n=SHEETS.filter(function(s){return s.mach===m[0];}).length;
         return '<tr><td class="strong">'+esc(m[0])+'</td>'+
-          '<td><span class="mono">'+esc(m[1])+'</span></td><td>'+esc(m[2])+'</td>'+
-          '<td class="num">'+esc(m[3])+' h</td><td>'+esc(m[4])+'</td><td>'+st+'</td>'+
+          '<td><span class="mono">'+esc(m[1])+'</span></td>'+
+          '<td>'+esc(m[2])+'</td>'+
+          '<td>'+esc(m[3])+'</td>'+
+          '<td class="num">'+esc(m[4])+' h</td>'+
+          '<td>'+esc(m[5])+'</td>'+
           '<td class="num">'+n+'</td></tr>';
       }).join("")+'</tbody></table></div></div>';
   }

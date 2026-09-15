@@ -84,8 +84,10 @@ and tables. Eight sections:
    person's level.
 5. **Timesheets** — week grid of hours per fitter per day from the clock, with
    booked vs unbooked totals and per-fitter approval.
-6. **Plant register** — every machine with fleet no, hour meter, last service and
-   whether a service is due or overdue.
+6. **Plant register** — every *customer* machine MPF has worked on, identified by
+   its serial number, with type, owner, hour meter, when it was last seen and how
+   many job sheets it has. MPF services other people's plant, so this is a work
+   history rather than an own-fleet list.
 7. **Customers & sites** — sites, who signs off, sheets raised and POs received.
 8. **Settings** — the service checklist template (toggle rows on and off), job
    types, the PO-required rule and chase reminders, the two access levels, and
