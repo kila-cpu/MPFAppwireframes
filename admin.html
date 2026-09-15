@@ -400,52 +400,52 @@
 
   /* status: draft | active | po | done  — po is "sent, waiting on the office" */
   var SHEETS=[
-    {no:"JC-1152",mach:"Genie S-60 Boom Lift",fleet:"SVPH3388",type:"12 week inspection & tyres",
+    {no:"JC-1152",mach:"Genie S-60 Boom Lift",fleet:"MPF3388",type:"12 week inspection & tyres",
      fitter:"",status:"draft",step:1,date:"2026-09-07",site:"MPF workshop",hours:0,
      fault:"6 monthly LOLER thorough examination due 12 Sep — certificate needed before it goes back out.",
      work:"",parts:[],checks:{},po:"",signer:""},
-    {no:"JC-1151",mach:"Thwaites 6T Site Dumper",fleet:"SVPH1755",type:"Repair",
+    {no:"JC-1151",mach:"Thwaites 6T Site Dumper",fleet:"MPF1755",type:"Repair",
      fitter:"",status:"draft",step:1,date:"2026-09-07",site:"SV796 Newcastle — Phase 2",hours:0,
      fault:"Tipping ram is slow and will not hold a load. Reported by the site foreman this morning.",
      work:"",parts:[],checks:{},po:"",signer:""},
-    {no:"JC-1150",mach:"Kubota KX027-4 Mini Digger",fleet:"SVPH2604",type:"Service",
+    {no:"JC-1150",mach:"Kubota KX027-4 Mini Digger",fleet:"MPF2604",type:"Service",
      fitter:"Stuart",status:"draft",step:1,date:"2026-09-06",site:"SV814 Holybanks, Swords",hours:0,
      fault:"Scheduled 250 hour service — oil, filters, greasing and track tension check.",
      work:"",parts:[],checks:{},po:"",signer:""},
-    {no:"JC-1148",mach:"Sunward SWE25UF Mini Excavator",fleet:"SVPH2871",type:"Repair",
+    {no:"JC-1148",mach:"Sunward SWE25UF Mini Excavator",fleet:"MPF2871",type:"Repair",
      fitter:"Stuart",status:"active",step:3,date:"2026-09-07",site:"MPF workshop",hours:2.5,
      fault:"Hydraulic hose burst on the boom ram — losing oil. Machine is off hire until repaired.",
      work:"Boom lowered and secured, burst hose removed. New hose made up and fitted, system bled.",
      parts:[["Hydraulic hose 3/8\" x 1200mm","HYD-1200",1]],
      checks:{7:"checked",8:"checked",9:"failed"},po:"",signer:""},
-    {no:"JC-1147",mach:"Terex TA6S Site Dumper",fleet:"SVPH2910",type:"Repair",
+    {no:"JC-1147",mach:"Terex TA6S Site Dumper",fleet:"MPF2910",type:"Repair",
      fitter:"Csaba Varga",status:"active",step:3,date:"2026-09-05",site:"MPF workshop",hours:2.25,
      fault:"Handbrake will not hold on a slope, cable seized.",
      work:"Cable freed off and re-routed, adjuster replaced.",parts:[],checks:{11:"checked"},po:"",signer:""},
-    {no:"JC-1145",mach:"CAT 320 Tracked Excavator",fleet:"SVPH1140",type:"Repair",
+    {no:"JC-1145",mach:"CAT 320 Tracked Excavator",fleet:"MPF1140",type:"Repair",
      fitter:"Stuart",status:"active",step:4,date:"2026-09-07",site:"SV748 Clonburris",hours:2.47,
      fault:"Will not crank. Operator reports a single click then nothing — suspect starter motor.",
      work:"Tested batteries — both good at 12.7V. Stripped starter, solenoid contacts burnt out.",
      parts:[["Battery 110Ah","BAT-110",1]],checks:{6:"checked",0:"checked"},po:"",signer:""},
-    {no:"JC-1144",mach:"Atlas Copco XAS 88 Compressor",fleet:"SVPH0471",type:"Service",
+    {no:"JC-1144",mach:"Atlas Copco XAS 88 Compressor",fleet:"MPF0471",type:"Service",
      fitter:"Declan Byrne",status:"active",step:2,date:"2026-09-05",site:"SV101 Turvey, Co. Dublin",
      hours:1.5,fault:"Annual service and safety valve test.",work:"",parts:[],checks:{},po:"",signer:""},
-    {no:"JC-1141",mach:"JCB 540-140 Telehandler",fleet:"SVPH0885",type:"12 week inspection & tyres",
-     fitter:"Stuart",status:"po",step:5,date:"2026-09-04",site:"MPF workshop",hours:2.5,
+    {no:"JC-1141",mach:"JCB 540-140 Telehandler",fleet:"MPF0885",type:"12 week inspection & tyres",
+     fitter:"Stuart",status:"po",step:4,date:"2026-09-04",site:"MPF workshop",hours:2.5,
      fault:"Statutory 12 week thorough examination plus routine service.",
      work:"12 week examination completed, no defects found. Service carried out — engine oil, oil filter, air filter and fuel filter replaced. Boom and carriage greased, forks and chains checked.",
      parts:[["Engine oil 15W40 (20L)","EO-1540",1],["Oil filter","OF-3406",1],
             ["Air filter","AF-2571",1],["Fuel filter","FF-5052",1]],
      checks:{0:"checked",1:"checked",2:"checked",3:"checked",4:"checked",10:"checked",13:"checked"},
      po:"",signer:"",sentTo:"Sinéad Brennan",sentAt:"6 Sep 2026, 16:40"},
-    {no:"JC-1139",mach:"Manitou MT625 Telehandler",fleet:"SVPH1902",type:"12 week inspection & tyres",
-     fitter:"Istvan Horvath",status:"done",step:5,date:"2026-09-02",site:"SV748 Clonburris",hours:1.75,
+    {no:"JC-1139",mach:"Manitou MT625 Telehandler",fleet:"MPF1902",type:"12 week inspection & tyres",
+     fitter:"Istvan Horvath",status:"done",step:4,date:"2026-09-02",site:"SV748 Clonburris",hours:1.75,
      fault:"12 week thorough examination.",
      work:"Examination completed, minor hydraulic weep on tilt ram noted for monitoring.",
      parts:[],checks:{7:"checked",9:"failed",10:"checked"},po:"PO-4463-SV",signer:"Gerry Hanley",
      sentTo:"Gerry Hanley",sentAt:"2 Sep 2026, 17:10"},
-    {no:"JC-1136",mach:"Bomag BW120 Tandem Roller",fleet:"SVPH3012",type:"Service",
-     fitter:"Stuart",status:"done",step:5,date:"2026-09-03",site:"SV790 Donabate",hours:3.25,
+    {no:"JC-1136",mach:"Bomag BW120 Tandem Roller",fleet:"MPF3012",type:"Service",
+     fitter:"Stuart",status:"done",step:4,date:"2026-09-03",site:"SV790 Donabate",hours:3.25,
      fault:"500 hour service and drum scraper adjustment.",
      work:"Full 500 hour service completed. Drum scrapers adjusted, water system flushed and sprinkler bars cleared.",
      parts:[["Engine oil 15W40 (20L)","EO-1540",1],["Oil filter","OF-3406",1]],
@@ -602,7 +602,7 @@
         :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
       '<td>'+pill(s.status)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
-        (s.step/5*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/5</span></div></td>'+
+        (s.step/4*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/4</span></div></td>'+
       '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td></tr>';
   }
 
@@ -640,7 +640,7 @@
               :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
             '<td>'+pill(s.status)+'</td>'+
             '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
-              (s.step/5*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/5</span></div></td>'+
+              (s.step/4*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/4</span></div></td>'+
             '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td>'+
             '<td>'+(s.po?'<span class="mono strong">'+esc(s.po)+'</span>'
               :'<span class="cell-sub" style="margin:0">—</span>')+'</td></tr>';
@@ -705,7 +705,7 @@
         '</div></div>'+
         '<div class="card"><h2>Progress</h2><div class="cbody"><dl class="drows">'+
           drow("Status",pill(s.status))+
-          drow("Step",'<b>'+s.step+' of 5</b>')+
+          drow("Step",'<b>'+s.step+' of 4</b>')+
           drow("Raised",fmtDate(s.date))+
           drow("Photos",'<div class="photos"><span>📷</span><span>📷</span></div>')+
         '</dl></div></div>'+
