@@ -1236,7 +1236,6 @@
   }
   var SITES=["MPF workshop","SV101 Turvey, Co. Dublin","SV748 Clonburris",
              "SV790 Donabate","SV796 Newcastle — Phase 2","SV814 Holybanks, Swords"];
-  var JOBTYPES=["Service","Repair","Breakdown","12 Week Inspection","LOLER Examination"];
   var OFFICE=[
     {n:"Sinéad Brennan",r:"Accounts & purchasing",e:"sinead.brennan@mpfitters.ie"},
     {n:"Gerry Hanley",       r:"Contracts manager",    e:"g.hanley@mpfitters.ie"},
@@ -1306,7 +1305,7 @@
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1145",fleet:"MPF1140",loc:"Onsite",site:"SV748 Clonburris",
-         type:"Breakdown",pri:"High",raised:"7 Sep 2026",
+         type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Will not crank. Operator reports a single click then nothing — suspect starter motor.",
          adminNote:"Ring the site foreman on arrival, gate code 4417.",
          fitter:"Declan Byrne",status:"progress",
@@ -1326,7 +1325,7 @@
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1141",fleet:"MPF0885",loc:"Workshop",site:"MPF workshop",
-         type:"12 Week Inspection",pri:"Normal",raised:"4 Sep 2026",
+         type:"Service",pri:"Normal",raised:"4 Sep 2026",
          fault:"Statutory 12 week thorough examination plus routine service.",
          adminNote:"",fitter:"Declan Byrne",status:"po",
          sessions:[{i:todayAt(7,42)-86400000,o:todayAt(7,42)-86400000+150*60000}],
@@ -1355,7 +1354,7 @@
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1152",fleet:"MPF3388",loc:"Workshop",site:"MPF workshop",
-         type:"LOLER Examination",pri:"Normal",raised:"7 Sep 2026",
+         type:"Service",pri:"Normal",raised:"7 Sep 2026",
          fault:"6 monthly LOLER thorough examination due 12 Sep — certificate needed before it goes back out.",
          adminNote:"",fitter:"",status:"unassigned",sessions:[],work:"",meter:"",parts:[],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
@@ -1375,7 +1374,7 @@
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1139",fleet:"MPF1902",loc:"Onsite",site:"SV748 Clonburris",
-         type:"12 Week Inspection",pri:"Normal",raised:"2 Sep 2026",
+         type:"Service",pri:"Normal",raised:"2 Sep 2026",
          fault:"12 week thorough examination.",
          adminNote:"",fitter:"Istvan Horvath",status:"signed",
          sessions:[{i:todayAt(7,42)-5*86400000,o:todayAt(7,42)-5*86400000+105*60000}],
@@ -1832,7 +1831,7 @@
   var EQUIP=["Excavator","Dumper","Telehandler","Roller","Compressor","Boom lift","Generator"];
   var EQICON={Excavator:"🚜",Dumper:"🚧",Telehandler:"🏗",Roller:"⚙️",
               Compressor:"⚙️","Boom lift":"🏗",Generator:"⚙️"};
-  var JTYPES=["Service","Repair","12 week inspection & tyres"];
+  var JTYPES=["Service","Repair"];
   var PARTCAT=[["Oil filter","OF-3406"],["Fuel filter","FF-5052"],["Air filter","AF-2571"],
     ["Hydraulic filter","HF-6177"],["Engine oil 15W40 (20L)","EO-1540"],
     ["Hydraulic oil ISO 46 (20L)","HO-4620"],["Fanbelt","FB-0912"],["Battery 110Ah","BAT-110"],
@@ -1847,7 +1846,7 @@
     j.equip=j.equip||""; j.model=j.model||mc[0];
     j.contact=j.contact||"";
     j.jtype=j.jtype||(JTYPES.indexOf(j.type)>=0?j.type
-      :(j.type==="12 Week Inspection"?"12 week inspection & tyres":"Service"));
+      :"Service");
     j.checks=j.checks||{};
     j.performed=j.performed||j.work||"";
     j.parts=(j.parts||[]).map(function(p){ return p.name?p:{name:p.p,num:p.c,qty:p.q,pre:!!p.pre}; });
