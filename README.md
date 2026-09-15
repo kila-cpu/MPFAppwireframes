@@ -49,9 +49,15 @@ Doing the work. **Four steps — Start, Work, Parts, End** — with the service
 checklist, parts modal, photos, signature and completion, then the office
 sign-off link that requires a PO number.
 
-A sheet handed to the fitter and not yet started is tagged **Assigned** in green,
-with a green card edge; once they mark anything it becomes **Active**, and
-**Complete** on sign-off.
+Sheet states read the same in all three wireframes:
+
+| State | Means |
+| --- | --- |
+| `Unassigned` | Raised, nobody has it yet (backend only) |
+| `Assigned` | Handed to a fitter, not started — green on the fitter's side |
+| `Draft` | Started, but not every stage of the job card is finished |
+| `Awaiting PO` | Sent to the office, waiting on a PO number |
+| `Complete` | Signed off |
 
 There is no Details step: the machine, site, contact and job type were set by
 whoever raised the sheet, so the fitter never re-enters them. They appear instead

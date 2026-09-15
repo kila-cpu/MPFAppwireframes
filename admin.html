@@ -453,8 +453,13 @@
      po:"PO-4471",signer:"Sinéad Brennan",sentTo:"Sinéad Brennan",sentAt:"4 Sep 2026, 15:55"}
   ];
 
-  var LBL={draft:"Draft",active:"In progress",po:"Awaiting PO",done:"Complete"};
-  function pill(st){return '<span class="pill '+(st==="done"?"done":st)+'">'+LBL[st]+'</span>';}
+  var LBL={draft:"Assigned",active:"Draft",po:"Awaiting PO",done:"Complete"};
+  function pill(st,hasFitter){
+    /* a not-started sheet reads Assigned, or Unassigned while nobody has it */
+    var un=(st==="draft"&&hasFitter===false);
+    var cls=un?"unassigned":(st==="done"?"done":st);
+    return '<span class="pill '+cls+'">'+(un?"Unassigned":LBL[st])+'</span>';
+  }
   function fmtDate(iso){
     var M=["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
     var p=String(iso).split("-"); if(p.length!==3) return iso;
@@ -557,7 +562,7 @@
           '<div class="num">'+unassigned.length+'</div>'+
           '<div class="sub">job sheets with no fitter</div></div>'+
         '<div class="kpi"><div class="lab">Open sheets</div><div class="num">'+open.length+
-          ' <small>/ '+SHEETS.length+'</small></div><div class="sub">draft or in progress</div></div>'+
+          ' <small>/ '+SHEETS.length+'</small></div><div class="sub">assigned or in draft</div></div>'+
         '<div class="kpi'+(po.length?" violet":"")+'"><div class="lab">Awaiting PO</div>'+
           '<div class="num">'+po.length+'</div><div class="sub">with the office for sign-off</div></div>'+
         '<div class="kpi"><div class="lab">On the clock</div><div class="num">'+onClock.length+
@@ -600,14 +605,14 @@
       '<td>'+(s.fitter?'<div class="who2"><span class="av'+(fitterOn(s.fitter)?" on":"")+'">'+
         ini(s.fitter)+'</span><b>'+esc(s.fitter)+'</b></div>'
         :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
-      '<td>'+pill(s.status)+'</td>'+
+      '<td>'+pill(s.status,!!s.fitter)+'</td>'+
       '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
         (s.step/4*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/4</span></div></td>'+
       '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td></tr>';
   }
 
   /* ---------- 2 · Job sheets ---------- */
-  var FILTERS=[["all","All"],["draft","Draft"],["active","In progress"],["po","Awaiting PO"],["done","Complete"]];
+  var FILTERS=[["all","All"],["draft","Assigned"],["active","Draft"],["po","Awaiting PO"],["done","Complete"]];
   function vSheets(){
     var rows=SHEETS.filter(function(s){
       if(S.filter!=="all"&&s.status!==S.filter) return false;
@@ -638,7 +643,7 @@
             '<td>'+(s.fitter?'<div class="who2"><span class="av'+(fitterOn(s.fitter)?" on":"")+'">'+
               ini(s.fitter)+'</span><b>'+esc(s.fitter)+'</b></div>'
               :'<span class="pill unassigned">Unassigned</span>')+'</td>'+
-            '<td>'+pill(s.status)+'</td>'+
+            '<td>'+pill(s.status,!!s.fitter)+'</td>'+
             '<td><div style="display:flex;align-items:center;gap:9px"><span class="bar"><i style="width:'+
               (s.step/4*100)+'%"></i></span><span class="cell-sub" style="margin:0">'+s.step+'/4</span></div></td>'+
             '<td class="num">'+(s.hours?s.hours.toFixed(2):"—")+'</td>'+
@@ -704,14 +709,14 @@
             'The office cannot sign without giving a PO number.</div>')+
         '</div></div>'+
         '<div class="card"><h2>Progress</h2><div class="cbody"><dl class="drows">'+
-          drow("Status",pill(s.status))+
+          drow("Status",pill(s.status,!!s.fitter))+
           drow("Step",'<b>'+s.step+' of 4</b>')+
           drow("Raised",fmtDate(s.date))+
           drow("Photos",'<div class="photos"><span>📷</span><span>📷</span></div>')+
         '</dl></div></div>'+
       '</div></div>';
   }
-  function pillSp(s){return '<span class="sp">'+pill(s.status)+'</span>';}
+  function pillSp(s){return '<span class="sp">'+pill(s.status,!!s.fitter)+'</span>';}
   function drow(k,v){return '<div class="drow"><dt>'+k+'</dt><dd>'+v+'</dd></div>';}
 
   /* ---------- 3 · Employees ---------- */

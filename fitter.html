@@ -688,15 +688,15 @@
     box-shadow:0 1px 3px rgba(20,25,40,.09),0 1px 2px rgba(20,25,40,.05)}
   .shcard:active{background:#FCFCFD}
   .shcard.st-done{border-left-color:var(--green)}
-  .shcard.st-draft{border-left-color:var(--green)}
-  .shcard.st-active{border-left-color:var(--red)}
+  .shcard.st-assigned{border-left-color:var(--green)}
+  .shcard.st-draft{border-left-color:var(--red)}
   .shcard .r1{display:flex;align-items:flex-start;gap:10px}
   .shcard .r1 b{flex:1;min-width:0;font-size:17px;font-weight:850;letter-spacing:-.025em;
     line-height:1.28;color:var(--ink)}
   .shpill{flex:none;font-size:13px;font-weight:800;border-radius:8px;padding:5px 10px;white-space:nowrap}
   .shpill.done{background:var(--green-soft);color:var(--green-text)}
-  .shpill.draft{background:var(--green);color:#fff}
-  .shpill.active{background:var(--red-soft);color:var(--red-text)}
+  .shpill.assigned{background:var(--green);color:#fff}
+  .shpill.draft{background:var(--red-soft);color:var(--red-text)}
   .shcard .meta{font-size:14px;font-weight:600;color:var(--sub-2);margin-top:9px}
   .shcard .stp{font-size:15px;font-weight:700;color:var(--ink);margin-top:3px}
   .cardbtns{display:flex;gap:9px;flex-wrap:wrap;align-items:center}
@@ -1664,10 +1664,11 @@
   /* the wireframe groups the five internal statuses into three chips */
   function bucket(j){
     if(j.status==="signed") return "done";
-    if(j.status==="progress"||j.status==="po") return "active";
-    return "draft";
+    /* draft = the fitter has started but not finished every stage */
+    if(j.status==="progress"||j.status==="po") return "draft";
+    return "assigned";
   }
-  var CHIPS=[["all","All"],["active","Active"],["draft","Assigned"],["done","Done"]];
+  var CHIPS=[["all","All"],["assigned","Assigned"],["draft","Draft"],["done","Done"]];
 
   /* Everyone sees and works their own sheets. Full access can also look at
      unassigned sheets and everyone else's, in order to hand them out. */
@@ -1763,7 +1764,7 @@
     var rows=list.filter(function(j){return S.filter==="all"||bucket(j)===S.filter;});
     $("shList").innerHTML=rows.length?rows.map(function(j){
       var b=bucket(j);
-      var lab=b==="done"?"Complete":b==="active"?"Active":"Assigned";
+      var lab=b==="done"?"Complete":b==="draft"?"Draft":"Assigned";
       var who=j.fitter?j.fitter.split(" ")[0]:"Unassigned";
       /* only a full-access user can hand a sheet to someone else, and only
          while it is still open */
