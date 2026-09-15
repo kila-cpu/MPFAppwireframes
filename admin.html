@@ -709,14 +709,10 @@
       : '<span class="pill draft">General Access</span>';
   }
   function vFitters(){
-    var full=FITTERS.filter(function(f){return f.access==="full";});
     return head("Employees",
       "Who is on the clock, what they are working on, and what they are allowed to do",
       '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>'+
       '<button class="btn primary" id="addUser">'+ic("PLUS")+' Add employee</button>')+
-      '<div class="note" style="margin-bottom:20px"><b>Full Access</b> can assign job cards to '+
-      'other users; <b>General Access</b> can only work the job cards assigned to them. '+
-      full.length+' of '+FITTERS.length+' employees currently have full access.</div>'+
       '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Employee</th><th>Access</th>'+
       '<th>Can assign job cards</th><th>Clock</th><th>Open sheets</th><th>Working on</th>'+
       '<th>Hours this week</th></tr></thead><tbody>'+
