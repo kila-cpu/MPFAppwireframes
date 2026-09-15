@@ -241,6 +241,60 @@
   .taglist span{background:var(--field);border:1px solid var(--line-2);border-radius:8px;
     padding:7px 12px;font-size:13.5px;font-weight:700}
 
+  /* ---------- modal ---------- */
+  .mscrim{position:fixed;inset:0;background:rgba(15,20,30,.5);z-index:70;opacity:0;
+    pointer-events:none;transition:opacity .18s;display:flex;align-items:flex-start;
+    justify-content:center;padding:40px 20px;overflow-y:auto}
+  .mscrim.on{opacity:1;pointer-events:auto}
+  .mbox{background:#fff;border-radius:16px;width:100%;max-width:620px;
+    box-shadow:0 30px 70px -20px rgba(15,20,30,.55);transform:translateY(-8px);
+    transition:transform .18s;display:flex;flex-direction:column;max-height:100%}
+  .mscrim.on .mbox{transform:none}
+  .mhead{display:flex;align-items:center;gap:14px;padding:20px 24px;border-bottom:1px solid var(--line)}
+  .mhead b{flex:1;font-size:19px;font-weight:850;letter-spacing:-.03em}
+  .mhead .x{width:38px;height:38px;border:0;background:var(--field);border-radius:50%;
+    color:var(--sub);cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+  .mhead .x svg{width:16px;height:16px}
+  .mhead .x:hover{background:var(--line-2)}
+  .mbody{padding:22px 24px;overflow-y:auto;flex:1}
+  .mfoot{display:flex;gap:11px;justify-content:flex-end;padding:16px 24px;
+    border-top:1px solid var(--line);background:#FCFCFD;border-radius:0 0 16px 16px}
+  .fsec2{display:flex;align-items:center;gap:12px;margin:26px 0 16px;font-size:13px;
+    font-weight:850;letter-spacing:.05em;text-transform:uppercase;color:var(--sub-2)}
+  .fsec2:first-child{margin-top:0}
+  .fsec2 i{flex:1;height:1px;background:var(--line-2)}
+  .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .fld{margin-bottom:14px}
+  .fld:last-child{margin-bottom:0}
+  .fld label{display:block;font-size:13px;font-weight:750;margin-bottom:7px;color:var(--ink)}
+  .fld .req{color:var(--red)}
+  .fld input,.fld select,.fld textarea{width:100%;min-height:44px;border:1px solid var(--line-2);
+    border-radius:9px;padding:11px 13px;font-size:14.5px;font-family:inherit;color:var(--ink);
+    background:#fff;outline:0}
+  .fld textarea{min-height:82px;resize:vertical;line-height:1.5}
+  .fld input:focus,.fld select:focus,.fld textarea:focus{border-color:var(--red);
+    box-shadow:0 0 0 3px rgba(211,48,42,.12)}
+  .fld.bad input,.fld.bad select,.fld.bad textarea{border-color:var(--red);background:var(--red-soft)}
+  .seg2{display:flex;gap:9px}
+  .seg2 button{flex:1;min-height:44px;border:1px solid var(--line-2);background:#fff;border-radius:9px;
+    font-size:14px;font-weight:700;color:var(--sub);cursor:pointer;font-family:inherit}
+  .seg2 button.on{background:var(--red-soft);border-color:var(--red);color:var(--red-text)}
+  .addrow{display:flex;gap:10px;align-items:flex-end}
+  .addrow .fld{flex:1;margin-bottom:0}
+  .addrow .qtyf{width:96px;flex:none}
+  .plist{margin-top:14px;display:flex;flex-direction:column;gap:9px}
+  .prow3{display:flex;align-items:center;gap:12px;background:var(--field);border-radius:9px;
+    padding:11px 14px}
+  .prow3 .pt{flex:1;min-width:0}
+  .prow3 .pt b{display:block;font-size:14px;font-weight:750}
+  .prow3 .pt span{display:block;font-size:12.5px;color:var(--sub-2);font-family:var(--mono);margin-top:2px}
+  .prow3 .q{font-weight:800;font-variant-numeric:tabular-nums}
+  .prow3 .x{width:32px;height:32px;border:0;background:#fff;border-radius:8px;color:var(--sub-2);
+    cursor:pointer;display:flex;align-items:center;justify-content:center;flex:none}
+  .prow3 .x svg{width:15px;height:15px}
+  .prow3 .x:hover{background:var(--red-soft);color:var(--red)}
+  .pnone{font-size:14px;font-style:italic;color:var(--sub-2);margin:14px 0 0}
+
   /* ---------- toast ---------- */
   .toast{position:fixed;right:24px;bottom:24px;z-index:80;background:var(--black);color:#fff;
     font-size:14px;font-weight:650;padding:14px 18px;border-radius:11px;max-width:380px;
@@ -283,6 +337,18 @@
   </div>
 </div>
 
+<div class="mscrim" id="njModal">
+  <div class="mbox" role="dialog" aria-modal="true" aria-label="Assign a job">
+    <div class="mhead"><b>Assign a job</b><span class="jno" id="njNo"></span>
+      <button class="x" id="njX" aria-label="Close"></button></div>
+    <div class="mbody" id="njBody"></div>
+    <div class="mfoot">
+      <button class="btn ghost" id="njCancel">Cancel</button>
+      <button class="btn primary" id="njSave">Save &amp; assign</button>
+    </div>
+  </div>
+</div>
+
 <div class="scrim" id="scrim"></div>
 <div class="toast" id="toast"><span class="ti" id="toastIc"></span><span id="toastTxt"></span></div>
 
@@ -319,7 +385,8 @@
     MAIL:sv('<rect x="2.5" y="5" width="19" height="14" rx="2"/><path d="m3.5 6.5 8.5 6.5 8.5-6.5"/>',1.8),
     DOWN:sv('<path d="M12 4v12M7 11.5 12 16.5l5-5M4.5 20h15"/>',1.9),
     ALERT:sv('<path d="M12 3.5 2.5 20h19L12 3.5Z"/><path d="M12 9.5v4.2M12 17v.3"/>',1.8),
-    PLUS:sv('<path d="M12 5v14M5 12h14"/>',2.3)
+    PLUS:sv('<path d="M12 5v14M5 12h14"/>',2.3),
+    TRASH:sv('<path d="M4 7h16M9.5 7V4.8h5V7M6.5 7l.9 12.2a1.5 1.5 0 0 0 1.5 1.3h6.2a1.5 1.5 0 0 0 1.5-1.3L17.5 7"/>',1.9)
   };
   function ic(k){return I[k]||"";}
 
@@ -622,7 +689,7 @@
     });
     return head("Job sheets","Every sheet raised by the workshop, live as the fitters fill them in",
       '<button class="btn ghost" id="expCsv">'+ic("DOWN")+' Export CSV</button>'+
-      '<button class="btn primary" id="newSheet">'+ic("PLUS")+' New job sheet</button>')+
+      '<button class="btn primary" id="newSheet">'+ic("PLUS")+' Assign job</button>')+
       '<div class="card"><div class="toolbar">'+
         '<div class="search"><span class="si">'+ic("SEARCH")+'</span>'+
         '<input id="q" placeholder="Search job no, machine, fleet no, fitter or site…" value="'+
@@ -962,7 +1029,8 @@
         toast("Setting updated");
       });
     });
-    ["expCsv","expPdf","newSheet","addMach","addPart","addSite","addUser"].forEach(function(id){
+    if($("newSheet")) $("newSheet").addEventListener("click",njOpen);
+    ["expCsv","expPdf","addMach","addPart","addSite","addUser"].forEach(function(id){
       var n=$(id);
       if(n) n.addEventListener("click",function(){
         toast("<b>"+n.textContent.trim()+"</b> — not wired up in this wireframe");
@@ -970,11 +1038,170 @@
     });
   }
 
+  /* ============================================================
+     Assign a job — popup, same fields as the full-access phone app
+     ============================================================ */
+  var EQUIP=["Excavator","Dumper","Telehandler","Roller","Compressor","Boom lift","Generator"];
+  var ND=null;
+
+  function nextNo(){
+    var max=0;
+    SHEETS.forEach(function(s){ var n=+String(s.no).replace(/\D/g,""); if(n>max) max=n; });
+    return "JC-"+(max+1);
+  }
+
+  function njOpen(){
+    ND={no:nextNo(),mach:"",fleet:"",equip:"",loc:"Workshop",site:"",contact:"",
+        jtype:(S.jtypes[0]||"Service"),fault:"",fitter:"",parts:[]};
+    $("njNo").textContent="#"+ND.no;
+    njRender();
+    $("njModal").classList.add("on");
+  }
+  function njClose(){ $("njModal").classList.remove("on"); }
+
+  function njRender(){
+    function opts(arr,v,ph){
+      return '<option value="">'+esc(ph)+'</option>'+arr.map(function(o){
+        return '<option'+(v===o?" selected":"")+'>'+esc(o)+'</option>';}).join("");
+    }
+    $("njBody").innerHTML=
+      '<div class="fsec2"><span>Job details</span><i></i></div>'+
+      '<div class="fgrid">'+
+        '<div class="fld" id="nfMach"><label>Machine <span class="req">*</span></label>'+
+          '<input type="text" id="amMach" value="'+esc(ND.mach)+'" autocomplete="off" '+
+          'placeholder="e.g. CAT 320 Tracked Excavator"></div>'+
+        '<div class="fld"><label>Fleet no. / serial</label>'+
+          '<input type="text" id="amFleet" value="'+esc(ND.fleet)+'" autocomplete="off" '+
+          'placeholder="e.g. CAT0320LKGG02184"></div>'+
+      '</div>'+
+      '<div class="fgrid">'+
+        '<div class="fld"><label>Equipment type</label><select id="amEquip">'+
+          opts(EQUIP,ND.equip,"Select equipment type…")+'</select></div>'+
+        '<div class="fld"><label>Where is the work</label><div class="seg2" id="amLoc">'+
+          '<button data-v="Workshop" class="'+(ND.loc==="Workshop"?"on":"")+'">Workshop</button>'+
+          '<button data-v="Onsite" class="'+(ND.loc==="Onsite"?"on":"")+'">Onsite</button>'+
+          '</div></div>'+
+      '</div>'+
+      (ND.loc==="Onsite"?'<div class="fgrid">'+
+        '<div class="fld" id="nfSite"><label>Site address <span class="req">*</span></label>'+
+          '<input type="text" id="amSite" value="'+esc(ND.site)+'" autocomplete="off" '+
+          'placeholder="e.g. Clonburris SDZ, Clondalkin, Dublin 22"></div>'+
+        '<div class="fld"><label>Site contact number</label>'+
+          '<input type="tel" id="amContact" value="'+esc(ND.contact)+'" placeholder="Enter number">'+
+        '</div></div>':'')+
+      '<div class="fld"><label>Job type</label><div class="seg2" id="amJt">'+
+        S.jtypes.map(function(t){
+          return '<button data-jt="'+esc(t)+'" class="'+(ND.jtype===t?"on":"")+'">'+esc(t)+'</button>';
+        }).join("")+'</div></div>'+
+      '<div class="fld" id="nfFault"><label>Fault / work required <span class="req">*</span></label>'+
+        '<textarea id="amFault" placeholder="What is wrong with the machine, or what is due?">'+
+        esc(ND.fault)+'</textarea></div>'+
+
+      '<div class="fsec2"><span>Parts for the job</span><i></i></div>'+
+      '<div class="addrow">'+
+        '<div class="fld"><label>Part</label><select id="apName">'+
+          '<option value="">Select part…</option>'+PARTS.map(function(p){
+            return '<option value="'+esc(p[0])+'">'+esc(p[0])+' &nbsp;·&nbsp; '+p[2]+' in stock</option>';
+          }).join("")+'</select></div>'+
+        '<div class="fld" style="width:170px;flex:none"><label>Part no.</label>'+
+          '<input type="text" id="apNum" placeholder="—"></div>'+
+        '<div class="fld qtyf"><label>Qty</label><input type="number" id="apQty" min="1" value="1"></div>'+
+        '<button class="btn ghost" id="apAdd" style="margin-bottom:0">'+ic("PLUS")+' Add</button>'+
+      '</div>'+
+      (ND.parts.length?'<div class="plist">'+ND.parts.map(function(p,n){
+          return '<div class="prow3"><span class="pt"><b>'+esc(p[0])+'</b>'+
+            (p[1]?'<span>'+esc(p[1])+'</span>':'')+'</span>'+
+            '<span class="q">&times; '+esc(p[2])+'</span>'+
+            '<button class="x" data-rmp="'+n+'" aria-label="Remove">'+ic("TRASH")+'</button></div>';
+        }).join("")+'</div>'
+        :'<p class="pnone">No parts allocated yet — anything added here is on the sheet before '+
+         'the fitter starts.</p>')+
+
+      '<div class="fsec2"><span>Assign to</span><i></i></div>'+
+      '<div class="fld" style="margin-bottom:0"><label>Employee</label><select id="amFit">'+
+        '<option value="">Leave unassigned for now</option>'+FITTERS.map(function(x){
+          var n=SHEETS.filter(function(s){
+            return s.fitter===x.n&&(s.status==="draft"||s.status==="active");}).length;
+          return '<option value="'+esc(x.n)+'"'+(ND.fitter===x.n?" selected":"")+'>'+esc(x.n)+
+            ' — '+(x.access==="full"?"Full access":"General access")+' · '+n+' open sheet'+
+            (n===1?"":"s")+(x.on?" · on the clock":" · off the clock")+'</option>';
+        }).join("")+'</select></div>';
+
+    njBind();
+  }
+
+  function njBind(){
+    $("amMach").addEventListener("input",function(){
+      ND.mach=this.value; $("nfMach").classList.remove("bad"); });
+    $("amFleet").addEventListener("input",function(){ ND.fleet=this.value; });
+    $("amEquip").addEventListener("change",function(){ ND.equip=this.value; });
+    $("amFault").addEventListener("input",function(){
+      ND.fault=this.value; $("nfFault").classList.remove("bad"); });
+    $("amFit").addEventListener("change",function(){ ND.fitter=this.value; });
+    if($("amSite")) $("amSite").addEventListener("input",function(){
+      ND.site=this.value; $("nfSite").classList.remove("bad"); });
+    if($("amContact")) $("amContact").addEventListener("input",function(){ ND.contact=this.value; });
+
+    [].forEach.call($("amLoc").querySelectorAll("button"),function(b){
+      b.addEventListener("click",function(){ ND.loc=b.dataset.v; njRender(); });
+    });
+    [].forEach.call($("amJt").querySelectorAll("button"),function(b){
+      b.addEventListener("click",function(){ ND.jtype=b.dataset.jt; njRender(); });
+    });
+    $("apName").addEventListener("change",function(){
+      var v=this.value, hit=PARTS.filter(function(p){return p[0]===v;})[0];
+      $("apNum").value=hit?hit[1]:"";
+    });
+    $("apAdd").addEventListener("click",function(){
+      var name=$("apName").value;
+      if(!name){ toast("Pick a part to add"); return; }
+      if(ND.parts.some(function(p){return p[0]===name;})){
+        toast("<b>"+esc(name)+"</b> is already on this sheet"); return; }
+      ND.parts.push([name,$("apNum").value,+$("apQty").value||1]);
+      njRender();
+      toast("<b>"+esc(name)+"</b> allocated to the job sheet");
+    });
+    [].forEach.call($("njBody").querySelectorAll("[data-rmp]"),function(b){
+      b.addEventListener("click",function(){ ND.parts.splice(+b.dataset.rmp,1); njRender(); });
+    });
+  }
+
+  function njBad(id){ var el=$(id); if(el) el.classList.add("bad"); }
+
+  $("njX").addEventListener("click",njClose);
+  $("njCancel").addEventListener("click",njClose);
+  $("njModal").addEventListener("click",function(e){ if(e.target===this) njClose(); });
+  document.addEventListener("keydown",function(e){
+    if(e.key==="Escape"&&$("njModal").classList.contains("on")) njClose();
+  });
+
+  $("njSave").addEventListener("click",function(){
+    var ok=true;
+    if(!ND.mach.trim()){ njBad("nfMach"); ok=false; }
+    if(ND.loc==="Onsite"&&!ND.site.trim()){ njBad("nfSite"); ok=false; }
+    if(!ND.fault.trim()){ njBad("nfFault"); ok=false; }
+    if(!ok){ toast("Fill in the highlighted fields"); return; }
+
+    SHEETS.unshift({no:ND.no,mach:ND.mach.trim(),fleet:ND.fleet.trim()||"—",type:ND.jtype,
+      fitter:ND.fitter,status:"draft",step:1,date:"2026-09-07",
+      site:ND.loc==="Workshop"?"MPF workshop":ND.site.trim(),hours:0,
+      fault:ND.fault.trim(),work:"",parts:ND.parts.slice(),checks:{},po:"",signer:"",
+      equip:ND.equip,contact:ND.contact});
+
+    njClose();
+    S.filter="all"; S.q="";
+    renderNav(); go("sheets");
+    toast(ND.fitter
+      ? "<b>#"+esc(ND.no)+"</b> raised and assigned to <b>"+esc(ND.fitter.split(" ")[0])+"</b>"
+      : "<b>#"+esc(ND.no)+"</b> raised — not assigned yet");
+  });
+
   /* ---------- boot ---------- */
   $("brandMark").innerHTML=MPF();
   document.querySelector(".sfoot").innerHTML=
     ic("HOME")+' <a href="index.html">All wireframes</a>';
   $("burger").innerHTML=ic("MENU");
+  $("njX").innerHTML=ic("X");
   renderNav(); go("dash");
 })();
 </script>
