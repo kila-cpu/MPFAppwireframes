@@ -407,6 +407,8 @@
     cursor:pointer}
   .prow .rm svg{width:16px;height:16px}
   .prow .rm:active{background:var(--red-soft);border-color:var(--red-line);color:var(--red)}
+  .alloc{flex:none;font-size:10.5px;font-weight:850;letter-spacing:.05em;text-transform:uppercase;
+    background:var(--red-soft);color:var(--red-text);border-radius:7px;padding:4px 8px}
   .addbtn{width:100%;min-height:48px;background:var(--red-soft);border:1.5px dashed var(--red-line);
     color:var(--red-text);font-weight:850;font-size:14px;border-radius:13px;padding:12px;cursor:pointer;
     display:flex;align-items:center;justify-content:center;gap:8px}
@@ -1283,7 +1285,9 @@
          type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Hydraulic hose burst on the boom ram — losing oil. Machine is off hire until it is repaired.",
          adminNote:"Hose kit came in yesterday, it is on the rack by the press. Priority — hire due back Wednesday.",
-         fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",parts:[],
+         fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",
+         parts:[{p:"Hydraulic hose 3/8\" x 1200mm",c:"HYD-1200",q:1,pre:true},
+                {p:"Hydraulic oil ISO 46 (20L)",c:"HO-4620",q:1,pre:true}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1145",fleet:"MPF1140",loc:"Onsite",site:"SV748 Clonburris",
@@ -1300,7 +1304,10 @@
         {no:"JC-1150",fleet:"MPF2604",loc:"Onsite",site:"SV814 Holybanks, Swords",
          type:"Service",pri:"Normal",raised:"6 Sep 2026",
          fault:"Scheduled 250 hour service — oil, filters, greasing and track tension check.",
-         adminNote:"",fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",parts:[],
+         adminNote:"",fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",
+         parts:[{p:"Oil filter",c:"OF-3406",q:1,pre:true},
+                {p:"Engine oil 15W40 (20L)",c:"EO-1540",q:1,pre:true},
+                {p:"Air filter",c:"AF-2571",q:1,pre:true}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1141",fleet:"MPF0885",loc:"Workshop",site:"MPF workshop",
@@ -1838,7 +1845,7 @@
     j.photos=j.photos||0;
     j.comments=j.comments||""; j.notes=j.notes||"";
     j.parts=(j.parts||[]).map(function(p){
-      return p.name?p:{name:p.p,num:p.c,qty:p.q};
+      return p.name?p:{name:p.p,num:p.c,qty:p.q,pre:!!p.pre};
     });
     j.wstep=j.wstep||(j.status==="signed"?4:1);
     return j;
@@ -1972,11 +1979,16 @@
 
   /* ---------- step 3 · Parts ---------- */
   function stepParts(j,ro){
+    var pre=j.parts.filter(function(p){return p.pre;}).length;
     return '<div class="prowhead"><b>Parts used</b><i></i>'+
       (ro?"":'<button class="add" id="wAddPart">+ Add part</button>')+'</div>'+
+      (pre?'<div class="banner steel" style="margin-bottom:14px"><span class="ic">'+ic("INFO")+
+        '</span><div class="bt"><b>'+pre+' part'+(pre===1?" was":"s were")+'</b> put on this sheet '+
+        'when the job was assigned. Remove anything you did not use.</div></div>':'')+
       (j.parts.length?j.parts.map(function(p,n){
         return '<div class="pitem"><span class="pt"><b>'+esc(p.name)+'</b>'+
           (p.num?'<span>'+esc(p.num)+'</span>':'')+'</span>'+
+          (p.pre?'<span class="alloc">Allocated</span>':'')+
           '<span class="qty">&times; '+esc(p.qty)+'</span>'+
           (ro?"":'<button class="del" data-rmp="'+n+'" aria-label="Remove">'+ic("TRASH")+'</button>')+
           '</div>';

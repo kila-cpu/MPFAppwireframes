@@ -28,10 +28,14 @@ Raising and handing out work. **Assigning a job needs only the job details and
 the person** — everything else belongs to the fitter.
 
 - **New job sheet** is a short form: machine (typed in, with an optional fleet
-  no.), equipment type, workshop or site (+ site contact), job type, fault, then
-  **Assign to**. Machine and fault are required; the fitter can be left blank and
+  no.), equipment type, workshop or site (+ site contact), job type, fault,
+  **the parts the job needs**, then **Assign to**. Machine and fault are required; the fitter can be left blank and
   handed out later. A machine that is not in the catalogue still displays
   correctly everywhere — the icon comes from the equipment type.
+- **Parts can be allocated when the job is raised**, so they are already on the
+  sheet when the fitter opens it. They show on the fitter's Parts step tagged
+  *Allocated*, above anything the fitter adds themselves, and the fitter can
+  remove anything they did not end up using.
 - **Scope switcher** on the list — My sheets / Unassigned / Everyone — with
   **Assign** / **Reassign** on any open sheet, and a banner for anything sitting
   unclaimed.

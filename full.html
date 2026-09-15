@@ -847,6 +847,19 @@
     padding:8px 2px;border-radius:8px;background:var(--field);color:var(--sub-2)}
   .s2.did{background:var(--red-soft);color:var(--red-text)}
   .prow .pi{font-size:12px;font-weight:900;color:var(--sub)}
+  .modal{position:absolute;inset:0;z-index:70;display:flex;align-items:center;justify-content:center;
+    padding:24px;background:rgba(15,20,30,.5);opacity:0;pointer-events:none;transition:opacity .2s}
+  .modal.on{opacity:1;pointer-events:auto}
+  .modal .box{background:#fff;border-radius:18px;padding:24px;width:100%;max-width:336px;
+    transform:scale(.96);transition:transform .2s}
+  .modal.on .box{transform:scale(1)}
+  .modal h3{margin:0 0 20px;font-size:22px;font-weight:850;letter-spacing:-.035em}
+  .modal .mbtns{display:flex;gap:12px;margin-top:22px}
+  .modal .mbtns button{flex:1;min-height:56px;border-radius:12px;border:0;font-size:17px;font-weight:850;
+    cursor:pointer;font-family:inherit}
+  .modal .mbtns .cancel{background:var(--field);color:var(--ink)}
+  .modal .mbtns .ok{background:var(--red);color:#fff}
+
   .wzfoot{position:absolute;left:0;right:0;bottom:0;z-index:45;background:#fff;
     border-top:1px solid var(--line);padding:12px 16px 18px;display:flex;gap:12px}
   .wzback{width:64px;min-height:58px;border-radius:14px;background:var(--field);border:0;flex:none;
@@ -1073,6 +1086,22 @@
       </div>
 
 
+      <div class="modal" id="partModal">
+        <div class="box">
+          <h3>Add Part</h3>
+          <div class="wf"><label>Part name</label>
+            <select id="mpName"><option value="">Select part</option></select></div>
+          <div class="wf"><label>Part number</label>
+            <input type="text" id="mpNum" placeholder="e.g. OF-3406"></div>
+          <div class="wf"><label>Quantity</label>
+            <input type="text" inputmode="numeric" id="mpQty" value="1"></div>
+          <div class="mbtns">
+            <button class="cancel" id="mpCancel">Cancel</button>
+            <button class="ok" id="mpAdd">Add</button>
+          </div>
+        </div>
+      </div>
+
       <div class="toast" id="toast"><span class="ti" id="toastIc"></span><span id="toastTxt"></span></div>
     </div>
   </div>
@@ -1271,7 +1300,9 @@
          type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Hydraulic hose burst on the boom ram — losing oil. Machine is off hire until it is repaired.",
          adminNote:"Hose kit came in yesterday, it is on the rack by the press. Priority — hire due back Wednesday.",
-         fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",parts:[],
+         fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",
+         parts:[{p:"Hydraulic hose 3/8\" x 1200mm",c:"HYD-1200",q:1,pre:true},
+                {p:"Hydraulic oil ISO 46 (20L)",c:"HO-4620",q:1,pre:true}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1145",fleet:"MPF1140",loc:"Onsite",site:"SV748 Clonburris",
@@ -1288,7 +1319,10 @@
         {no:"JC-1150",fleet:"MPF2604",loc:"Onsite",site:"SV814 Holybanks, Swords",
          type:"Service",pri:"Normal",raised:"6 Sep 2026",
          fault:"Scheduled 250 hour service — oil, filters, greasing and track tension check.",
-         adminNote:"",fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",parts:[],
+         adminNote:"",fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",
+         parts:[{p:"Oil filter",c:"OF-3406",q:1,pre:true},
+                {p:"Engine oil 15W40 (20L)",c:"EO-1540",q:1,pre:true},
+                {p:"Air filter",c:"AF-2571",q:1,pre:true}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
         {no:"JC-1141",fleet:"MPF0885",loc:"Workshop",site:"MPF workshop",
@@ -1799,6 +1833,11 @@
   var EQICON={Excavator:"🚜",Dumper:"🚧",Telehandler:"🏗",Roller:"⚙️",
               Compressor:"⚙️","Boom lift":"🏗",Generator:"⚙️"};
   var JTYPES=["Service","Repair","12 week inspection & tyres"];
+  var PARTCAT=[["Oil filter","OF-3406"],["Fuel filter","FF-5052"],["Air filter","AF-2571"],
+    ["Hydraulic filter","HF-6177"],["Engine oil 15W40 (20L)","EO-1540"],
+    ["Hydraulic oil ISO 46 (20L)","HO-4620"],["Fanbelt","FB-0912"],["Battery 110Ah","BAT-110"],
+    ["Grease cartridge EP2","GR-EP2"],["Hydraulic hose 3/8\" x 1200mm","HYD-1200"]];
+
   var STEPNAMES=["Start","Work","Parts","End"];
 
   function norm(j){
@@ -1811,7 +1850,7 @@
       :(j.type==="12 Week Inspection"?"12 week inspection & tyres":"Service"));
     j.checks=j.checks||{};
     j.performed=j.performed||j.work||"";
-    j.parts=(j.parts||[]).map(function(p){ return p.name?p:{name:p.p,num:p.c,qty:p.q}; });
+    j.parts=(j.parts||[]).map(function(p){ return p.name?p:{name:p.p,num:p.c,qty:p.q,pre:!!p.pre}; });
     j.wstep=j.wstep||(j.status==="signed"?4:1);
     return j;
   }
@@ -1871,8 +1910,10 @@
         }).join("")+'</div>'+
         '<dl class="drows" style="margin-top:16px">'+
         drow("Work done",j.performed?esc(j.performed):'<span class="muted">Not filled in yet</span>')+
-        drow("Parts used",j.parts.length?j.parts.map(function(p){
-          return esc(p.name)+' × '+esc(p.qty);}).join("<br>"):'<span class="muted">None</span>')+
+        drow("Parts",j.parts.length?j.parts.map(function(p){
+          return esc(p.name)+' × '+esc(p.qty)+
+            (p.pre?' <span class="muted">(allocated)</span>':'');}).join("<br>")
+          :'<span class="muted">None</span>')+
         drow("Checklist",done.length?(done.length+' of 16 rows marked')
           :'<span class="muted">Not started</span>')+
         drow("Signature",(j.sig||b==="done")?'<span style="color:var(--green-text);font-weight:800">Signed</span>'
@@ -1903,7 +1944,7 @@
   var D=null;
   function newSheet(){
     D={no:"JC-"+S.seq,mach:"",fleet:"",equip:"",loc:"Workshop",site:"MPF workshop",contact:"",
-       jtype:"Service",fault:"",fitter:""};
+       jtype:"Service",fault:"",fitter:"",parts:[]};
     $("njNo").textContent="#"+D.no;
     show("newjob"); renderNew();
   }
@@ -1943,6 +1984,18 @@
         '<textarea id="njFault" placeholder="What is wrong with the machine, or what is due?">'+
         esc(D.fault)+'</textarea></div>'+
 
+      '<div class="fsec mt"><b>Parts for the job</b><i></i></div>'+
+      '<div class="wf">'+
+        (D.parts.length?D.parts.map(function(p,n){
+          return '<div class="pitem"><span class="pt"><b>'+esc(p.name)+'</b>'+
+            (p.num?'<span>'+esc(p.num)+'</span>':'')+'</span>'+
+            '<span class="qty">&times; '+esc(p.qty)+'</span>'+
+            '<button class="del" data-rmp="'+n+'" aria-label="Remove">'+ic("TRASH")+'</button>'+
+            '</div>';
+        }).join(""):'<p class="pempty" style="margin:0 0 12px">No parts added yet.</p>')+
+        '<button class="addbtn" id="njAddPart">'+ic("PLUS")+' Add part</button>'+
+        '<div class="hint">Anything you add here is on the sheet before the fitter starts. '+
+        'They can still add or remove parts as the job goes on.</div></div>'+
       '<div class="fsec mt"><b>Assign to</b><i></i></div>'+
       '<div class="wf" id="nwFit" style="margin-bottom:0">'+
         '<button class="picker" id="njFit"><span class="pt">'+
@@ -1956,6 +2009,10 @@
     $("njMach").addEventListener("input",function(){
       D.mach=this.value; $("nwMach").classList.remove("bad"); });
     $("njFleet").addEventListener("input",function(){ D.fleet=this.value; });
+    $("njAddPart").addEventListener("click",function(){ partModalOpen(); });
+    [].forEach.call(document.querySelectorAll("#njBody [data-rmp]"),function(b){
+      b.addEventListener("click",function(){ D.parts.splice(+b.dataset.rmp,1); renderNew(); });
+    });
     $("njFit").addEventListener("click",function(){
       pickOpen({title:"Assign this job sheet",ph:"Search employees…",
         rows:FITTERS.map(function(x){
@@ -1980,6 +2037,34 @@
       D.fault=this.value; $("nwFault").classList.remove("bad"); });
     document.querySelector('.view[data-view="newjob"] .scroll').scrollTop=0;
   }
+  /* ---------- Add Part ---------- */
+  function partModalOpen(){
+    var sel=$("mpName");
+    sel.innerHTML='<option value="">Select part</option>'+
+      PARTCAT.map(function(p){return '<option value="'+esc(p[0])+'">'+esc(p[0])+'</option>';}).join("");
+    $("mpNum").value=""; $("mpQty").value="1";
+    $("partModal").classList.add("on");
+  }
+  function partModalClose(){ $("partModal").classList.remove("on"); }
+  $("mpCancel").addEventListener("click",partModalClose);
+  $("partModal").addEventListener("click",function(e){ if(e.target===this) partModalClose(); });
+  $("mpName").addEventListener("change",function(){
+    var v=this.value;
+    var hit=PARTCAT.filter(function(p){return p[0]===v;})[0];
+    if(hit) $("mpNum").value=hit[1];
+  });
+  $("mpAdd").addEventListener("click",function(){
+    var name=$("mpName").value;
+    if(!name){ toast("Pick a part","⚠️"); return; }
+    if(D.parts.some(function(p){return p.name===name;})){
+      toast("That part is already on the sheet","ℹ️"); return;
+    }
+    /* pre:true marks it as allocated when the job was raised, not used by the fitter */
+    D.parts.push({name:name,num:$("mpNum").value,qty:$("mpQty").value||"1",pre:true});
+    partModalClose(); renderNew();
+    toast("<b>"+esc(name)+"</b> added to the job sheet");
+  });
+
   function bad(id){
     var el=$(id); if(!el) return;
     el.classList.add("bad","shake");
@@ -2000,6 +2085,7 @@
       machName:D.mach.trim(),machIcon:EQICON[D.equip]||"⚙️",
       _n:true,equip:D.equip,model:D.mach.trim(),contact:D.contact,jtype:D.jtype,
       checks:{},performed:"",wstep:1};
+    j.parts=D.parts.slice();
     S.jobs.unshift(j); S.seq++;
     S.fresh=j.no; S.scope=D.fitter?"all":"unassigned"; S.filter="all";
     go("jobs");
