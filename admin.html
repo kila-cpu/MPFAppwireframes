@@ -451,13 +451,27 @@
     ["Battery 110Ah","BAT-110",2],["Grease cartridge EP2","GR-EP2",18],
     ["Hydraulic hose 3/8\" x 1200mm","HYD-1200",4]
   ];
-  var SITES=[
-    ["MPF workshop","Turvey yard","Workshop","—"],
-    ["Turvey Avenue, Donabate, Co. Dublin","Leinster Civil Works","Onsite","Sinéad Brennan"],
-    ["Clonburris SDZ, Clondalkin, Dublin 22","Leinster Civil Works","Onsite","Gerry Hanley"],
-    ["Ballisk Court, Donabate, Co. Dublin","Leinster Civil Works","Onsite","Sinéad Brennan"],
-    ["Newcastle Road, Lucan, Co. Dublin","Leinster Civil Works","Onsite","Gerry Hanley"],
-    ["Holybanks, Swords, Co. Dublin","Leinster Civil Works","Onsite","Sinéad Brennan"]
+  /* The customer is the record; the addresses under them are just where their
+     machines happen to be when MPF is called out. */
+  var CUSTOMERS=[
+    {n:"Leinster Civil Works",addr:"Unit 12 Clonburris Business Park, Clondalkin, Dublin 22",
+     contact:"Sinéad Brennan",role:"Contracts manager",phone:"01 457 2210",
+     email:"sinead@leinstercivil.ie",terms:"30 days",since:"2021",
+     sites:["Turvey Avenue, Donabate, Co. Dublin","Clonburris SDZ, Clondalkin, Dublin 22",
+            "Ballisk Court, Donabate, Co. Dublin","Newcastle Road, Lucan, Co. Dublin",
+            "Holybanks, Swords, Co. Dublin"]},
+    {n:"Turvey Plant Hire",addr:"Turvey Business Park, Donabate, Co. Dublin",
+     contact:"Alan Fitzgerald",role:"Yard manager",phone:"01 843 6677",
+     email:"alan@turveyplant.ie",terms:"30 days",since:"2019",sites:[]},
+    {n:"Donabate Plant Hire",addr:"Beaverstown Road, Donabate, Co. Dublin",
+     contact:"Marie Doyle",role:"Hire desk",phone:"01 843 1194",
+     email:"hire@donabateplant.ie",terms:"30 days",since:"2022",sites:[]},
+    {n:"Newcastle Developments",addr:"Athgoe Road, Newcastle, Co. Dublin",
+     contact:"Gerry Hanley",role:"Site foreman",phone:"087 221 4408",
+     email:"gerry@newcastledev.ie",terms:"14 days",since:"2023",sites:[]},
+    {n:"Kilcock Groundworks",addr:"Newtown Industrial Estate, Kilcock, Co. Kildare",
+     contact:"Pádraig Rooney",role:"Owner",phone:"086 770 3312",
+     email:"padraig@kilcockgw.ie",terms:"30 days",since:"2024",sites:[]}
   ];
   var CHECKLIST=["Engine oil","Engine oil filter","Engine fuel filter","Engine air filter",
     "Engine coolants","Engine fanbelts","Engine batteries","Hydraulic oils","Hydraulic filters",
@@ -551,11 +565,11 @@
     ["time","CLOCK","Timesheets"],
     ["plant","PLANT","Plant register"],
     ["parts","PART","Parts"],
-    ["sites","BUILD","Customers & sites"],
+    ["sites","BUILD","Customers"],
     ["settings","COG","Settings"]
   ];
   var TITLES={dash:"Dashboard",sheets:"Job sheets",fitters:"Employees",time:"Timesheets",
-    plant:"Plant register",parts:"Parts",sites:"Customers & sites",settings:"Settings",
+    plant:"Plant register",parts:"Parts",sites:"Customers",settings:"Settings",
     sheet:"Job sheet"};
 
   var toastT=null;
@@ -894,19 +908,52 @@
       }).join("")+'</tbody></table></div></div>';
   }
 
-  /* ---------- 7 · Customers & sites ---------- */
+  /* ---------- 7 · Customers ---------- */
+  /* a job sheet belongs to whoever owns the machine on it, wherever the work was done */
+  function custOfMach(name){
+    for(var i=0;i<MACHINES.length;i++) if(MACHINES[i][0]===name) return MACHINES[i][3];
+    return "";
+  }
+  function sheetsFor(c){
+    return SHEETS.filter(function(s){
+      return custOfMach(s.mach)===c.n || c.sites.indexOf(s.site)>=0;
+    });
+  }
   function vSites(){
-    return head("Customers & sites","Where the machines are, and who signs the job sheets off",
-      '<button class="btn primary" id="addSite">'+ic("PLUS")+' Add site</button>')+
-      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Site</th><th>Customer</th>'+
-      '<th>Type</th><th>Signs off</th><th>Job sheets</th><th>POs received</th></tr></thead><tbody>'+
-      SITES.map(function(t){
-        var rows=SHEETS.filter(function(s){return s.site===t[0];});
+    return head("Customers","Who MPF works for &mdash; their address, who signs the job sheets "+
+      "off, and everything done for them",
+      '<button class="btn primary" id="addSite">'+ic("PLUS")+' Add customer</button>')+
+      '<div class="card"><div class="tbl-wrap"><table><thead><tr><th>Customer</th><th>Address</th>'+
+      '<th>Signs off</th><th>Machines</th><th>Job sheets</th><th>POs received</th></tr></thead><tbody>'+
+      CUSTOMERS.map(function(c){
+        var rows=sheetsFor(c);
         var pos=rows.filter(function(s){return s.po;}).length;
-        return '<tr><td class="strong">'+esc(t[0])+'</td><td>'+esc(t[1])+'</td>'+
-          '<td>'+esc(t[2])+'</td><td>'+esc(t[3])+'</td>'+
+        var machs=MACHINES.filter(function(m){return m[3]===c.n;});
+        return '<tr>'+
+          '<td><div class="strong">'+esc(c.n)+'</div>'+
+          '<div class="cell-sub">Customer since '+esc(c.since)+' &middot; '+esc(c.terms)+'</div></td>'+
+          '<td>'+esc(c.addr)+
+            (c.sites.length?'<div class="cell-sub">+ '+c.sites.length+' work address'+
+              (c.sites.length===1?"":"es")+'</div>':'')+'</td>'+
+          '<td><div class="strong">'+esc(c.contact)+'</div>'+
+          '<div class="cell-sub">'+esc(c.role)+' &middot; '+esc(c.phone)+'</div></td>'+
+          '<td class="num">'+machs.length+'</td>'+
           '<td class="num">'+rows.length+'</td><td class="num">'+pos+'</td></tr>';
-      }).join("")+'</tbody></table></div></div>';
+      }).join("")+'</tbody></table></div></div>'+
+
+      '<div class="card"><h2>Work addresses<span class="sp">where their machines were '+
+      'when we were called out</span></h2><div class="cbody">'+
+      CUSTOMERS.filter(function(c){return c.sites.length;}).map(function(c){
+        return '<div class="setrow" style="align-items:flex-start"><div class="st">'+
+          '<b>'+esc(c.n)+'</b><span>'+c.sites.map(function(a){
+            var n=SHEETS.filter(function(s){return s.site===a;}).length;
+            return esc(a)+' ('+n+')';
+          }).join('<br>')+'</span></div></div>';
+      }).join("")+
+      '<div class="setrow"><div class="st"><b>MPF workshop</b>'+
+        '<span>Turvey yard &middot; machines brought in to us ('+
+        SHEETS.filter(function(s){return s.site==="MPF workshop";}).length+')</span></div></div>'+
+      '</div></div>';
   }
 
   /* ---------- 8 · Settings ---------- */
