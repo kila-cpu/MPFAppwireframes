@@ -1234,8 +1234,6 @@
   function openCount(n){
     return S.jobs.filter(function(j){return j.fitter===n&&j.status!=="signed";}).length;
   }
-  var SITES=["MPF workshop","SV101 Turvey, Co. Dublin","SV748 Clonburris",
-             "SV790 Donabate","SV796 Newcastle — Phase 2","SV814 Holybanks, Swords"];
   var OFFICE=[
     {n:"Sinéad Brennan",r:"Accounts & purchasing",e:"sinead.brennan@mpfitters.ie"},
     {n:"Gerry Hanley",       r:"Contracts manager",    e:"g.hanley@mpfitters.ie"},
@@ -1304,7 +1302,7 @@
                 {p:"Hydraulic oil ISO 46 (20L)",c:"HO-4620",q:1,pre:true}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
-        {no:"JC-1145",fleet:"MPF1140",loc:"Onsite",site:"SV748 Clonburris",
+        {no:"JC-1145",fleet:"MPF1140",loc:"Onsite",site:"Clonburris SDZ, Clondalkin, Dublin 22",
          type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Will not crank. Operator reports a single click then nothing — suspect starter motor.",
          adminNote:"Ring the site foreman on arrival, gate code 4417.",
@@ -1315,7 +1313,7 @@
          meter:"",parts:[{p:"Starter motor 12V",c:"ELE-STR-12",q:1}],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
-        {no:"JC-1150",fleet:"MPF2604",loc:"Onsite",site:"SV814 Holybanks, Swords",
+        {no:"JC-1150",fleet:"MPF2604",loc:"Onsite",site:"Holybanks, Swords, Co. Dublin",
          type:"Service",pri:"Normal",raised:"6 Sep 2026",
          fault:"Scheduled 250 hour service — oil, filters, greasing and track tension check.",
          adminNote:"",fitter:"Stuart",status:"assigned",sessions:[],work:"",meter:"",
@@ -1336,7 +1334,7 @@
          link:"mpf.jobsheet.app/s/7fK2QA",sentTo:"Sinéad Brennan",sentAt:"6 Sep 2026, 16:40",
          po:"",signer:"",signedAt:"",sig:null},
 
-        {no:"JC-1136",fleet:"MPF3012",loc:"Onsite",site:"SV790 Donabate",
+        {no:"JC-1136",fleet:"MPF3012",loc:"Onsite",site:"Ballisk Court, Donabate, Co. Dublin",
          type:"Service",pri:"Normal",raised:"3 Sep 2026",
          fault:"500 hour service and drum scraper adjustment.",
          adminNote:"",fitter:"Declan Byrne",status:"signed",
@@ -1345,9 +1343,9 @@
          meter:"2914.0",
          parts:[{p:"Engine oil 15W40 (20L)",c:"OIL-E15",q:1},{p:"Oil filter",c:"FLT-OIL-22",q:1}],
          link:"mpf.jobsheet.app/s/M3xB81",sentTo:"Sinéad Brennan",sentAt:"4 Sep 2026, 15:55",
-         po:"PO-4471-SV",signer:"Sinéad Brennan",signedAt:"4 Sep 2026, 16:22",sig:"ink"},
+         po:"PO-4471",signer:"Sinéad Brennan",signedAt:"4 Sep 2026, 16:22",sig:"ink"},
 
-        {no:"JC-1151",fleet:"MPF1755",loc:"Onsite",site:"SV796 Newcastle — Phase 2",
+        {no:"JC-1151",fleet:"MPF1755",loc:"Onsite",site:"Newcastle Road, Lucan, Co. Dublin",
          type:"Repair",pri:"High",raised:"7 Sep 2026",
          fault:"Tipping ram is slow and will not hold a load. Reported by the site foreman this morning.",
          adminNote:"",fitter:"",status:"unassigned",sessions:[],work:"",meter:"",parts:[],
@@ -1367,13 +1365,13 @@
          work:"Cable freed off and re-routed, adjuster replaced.",meter:"",parts:[],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
-        {no:"JC-1144",fleet:"MPF0471",loc:"Onsite",site:"SV101 Turvey, Co. Dublin",
+        {no:"JC-1144",fleet:"MPF0471",loc:"Onsite",site:"Turvey Avenue, Donabate, Co. Dublin",
          type:"Service",pri:"Normal",raised:"5 Sep 2026",
          fault:"Annual service and safety valve test.",
          adminNote:"",fitter:"Declan Byrne",status:"assigned",sessions:[],work:"",meter:"",parts:[],
          link:null,sentTo:"",po:"",signer:"",signedAt:"",sig:null},
 
-        {no:"JC-1139",fleet:"MPF1902",loc:"Onsite",site:"SV748 Clonburris",
+        {no:"JC-1139",fleet:"MPF1902",loc:"Onsite",site:"Clonburris SDZ, Clondalkin, Dublin 22",
          type:"Service",pri:"Normal",raised:"2 Sep 2026",
          fault:"Routine service.",
          adminNote:"",fitter:"Istvan Horvath",status:"signed",
@@ -1381,7 +1379,7 @@
          work:"Examination completed, minor hydraulic weep on tilt ram noted for monitoring.",
          meter:"7761.0",parts:[],
          link:"mpf.jobsheet.app/s/Qd90Lz",sentTo:"Gerry Hanley",sentAt:"2 Sep 2026, 17:10",
-         po:"PO-4463-SV",signer:"Gerry Hanley",signedAt:"2 Sep 2026, 17:31",sig:"ink"}
+         po:"PO-4463",signer:"Gerry Hanley",signedAt:"2 Sep 2026, 17:31",sig:"ink"}
       ]
     };
   }
@@ -1969,9 +1967,9 @@
       '<div class="wf"><label>Where is the work</label><div class="toggle" id="njLoc">'+
         '<button data-v="Workshop" class="'+(D.loc==="Workshop"?"on":"")+'">🏭 Workshop</button>'+
         '<button data-v="Onsite" class="'+(D.loc==="Onsite"?"on":"")+'">📍 Onsite</button></div></div>'+
-      (D.loc==="Onsite"?'<div class="wf" id="nwSite"><label>Site <span class="req">*</span></label>'+
-        '<select id="njSite"><option value="">Select site…</option>'+
-        opts(SITES.filter(function(x){return x.indexOf("workshop")<0;}),D.site)+'</select></div>'+
+      (D.loc==="Onsite"?'<div class="wf" id="nwSite"><label>Site address <span class="req">*</span></label>'+
+        '<input type="text" id="njSite" value="'+esc(D.site)+'" '+
+        'placeholder="e.g. Clonburris SDZ, Clondalkin, Dublin 22" autocomplete="off"></div>'+
         '<div class="wf"><label>Site contact number</label><input type="tel" id="njContact" value="'+
         esc(D.contact)+'" placeholder="Enter number"></div>':'')+
       '<div class="wf"><label>Job type</label>'+
@@ -2027,7 +2025,8 @@
         D.loc=b.dataset.v; D.site=D.loc==="Workshop"?"MPF workshop":""; renderNew();
       });
     });
-    if($("njSite")) $("njSite").addEventListener("change",function(){ D.site=this.value; });
+    if($("njSite")) $("njSite").addEventListener("input",function(){
+      D.site=this.value; $("nwSite").classList.remove("bad"); });
     if($("njContact")) $("njContact").addEventListener("input",function(){ D.contact=this.value; });
     [].forEach.call(document.querySelectorAll("#njBody [data-jt]"),function(b){
       b.addEventListener("click",function(){ D.jtype=b.dataset.jt; renderNew(); });
@@ -2341,12 +2340,11 @@
       '<div class="h-sec">Office sign-off</div>'+
       '<section class="card"><div class="cbody">'+
         '<div class="f" id="wPo"><label>PO number <span class="req">*</span></label>'+
-          '<input type="text" id="oPo" placeholder="e.g. PO-4482-SV" value="'+esc(O.po)+'"'+
+          '<input type="text" id="oPo" placeholder="e.g. PO-4482" value="'+esc(O.po)+'"'+
           (O.view?" readonly":"")+'></div>'+
         '<div class="f"><label>Cost centre / contract (optional)</label>'+
           '<select id="oCc"'+(O.view?" disabled":"")+'>'+
-          ['','Plant maintenance','SV748 Clonburris','SV790 Donabate',
-           'SV796 Newcastle — Phase 2','SV814 Holybanks'].map(function(c){
+          ['','Plant maintenance','Plant hire','Site works','Workshop repairs'].map(function(c){
             return '<option value="'+esc(c)+'"'+(O.cc===c?" selected":"")+'>'+
               (c||"— Not set —")+'</option>';}).join("")+'</select></div>'+
         '<div class="f" id="wName"><label>Your name <span class="req">*</span></label>'+
